@@ -36,12 +36,12 @@ class Classification:
                  input_activation='relu',
                  output_activation='sigmoid',
                  optimizer='adam',
-                 metrics=['accuracy'],
+                 metrics=['accuracy',],
                  loss='binary_crossentropy',
                  validation_split=.20,
                  epochs=100,
                  batch_size=32,
-                 tune_mode = 1
+                 tune_mode=1
                  ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, X_val using StandardScaler.
@@ -189,12 +189,18 @@ class Classification:
             self.n_components_lda, self.n_components_pca, self.pca_kernel, start)
 
         # Models ---------------------------------------------------------------------
-
-        self.parameters, self.classifier = classificationPredictor(
-            self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
-            self.input_activation, self.output_activation, self.loss,
-            self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units,self.tune_mode
-        )
+        if self.predictor == 'ann':
+            self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
+                self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
+                self.input_activation, self.output_activation, self.loss,
+                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+            )
+        else:
+            self.parameters, self.classifier = classificationPredictor(
+                self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
+                self.input_activation, self.output_activation, self.loss,
+                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+            )
 
         try:
 
@@ -210,10 +216,10 @@ class Classification:
             print('Data Prediction Done [', u'\u2713', ']\n')
         except Exception as error:
             print('Prediction Failed with error: ', error,  '\n')
-        
+
         # Confusion Matrix --------------------------------------------------------------
         if self.predictor == 'ann':
-            y_pred = (y_pred > 0.5)
+            y_pred = (y_pred > 0.5).astype("int32")
         confusionMatrix(y_pred, y_val)
 
         # Accuracy ---------------------------------------------------------------------
@@ -225,34 +231,41 @@ class Classification:
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
 
-
         # K-Fold ---------------------------------------------------------------------
-        self.classifier_name, accuracy = kfold( 
-            self.classifier,
-            self.predictor, self.input_units, self.epochs,
-            self.batch_size, self.X_train, self.y_train, self.cv_folds,
-            self.accuracy_scores,
-            self.hidden_layers,
-            self.input_activation, self.output_activation,
-            self.output_units, self.optimizer, self.loss, self.metrics
+        if self.predictor == 'ann':
+            self.classifier_name, accuracy = kfold(
+                self.classifier_wrap,
+                self.predictor, self.X_train, self.y_train, self.cv_folds,
 
-        )
+
+            )
+        else:
+            self.classifier_name, accuracy = kfold(
+                self.classifier,
+                self.predictor,
+                self.X_train, self.y_train, self.cv_folds,
+            )
 
         # GridSearch ---------------------------------------------------------------------
         if not self.predictor == 'nb' and self.tune:
             self.tuner()
 
-        
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.classifier_name,accuracy)
-    
+        return (self.classifier_name, accuracy)
+
     def tuner(self):
-        self.best_params = hyperTune(self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+        if self.predictor == 'ann':
+            self.best_params = hyperTune(
+                self.classifier_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+        else:
+            self.best_params = hyperTune(
+            self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
         if self.tune_mode == 3:
-            self.params =self.best_params
+            self.params = self.best_params
             self.tune = False
             self.predict(self.features, self.labels)
             print(self.params)
-            print('Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
+            print(
+                'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
