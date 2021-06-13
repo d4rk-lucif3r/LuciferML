@@ -37,10 +37,9 @@ def kfold(classifier, predictor,
         accuracies = cross_val_score(
             estimator=classifier, X=X_train, y=y_train, cv=cv_folds, scoring='accuracy')
         print("Accuracy: {:.2f} %".format(accuracies.mean()*100))
-        if not predictor == 'ann':
 
-            classifier_name = name[predictor]
-            accuracy = accuracies.mean()*100
+        classifier_name = name[predictor]
+        accuracy = accuracies.mean()*100
 
         print("Standard Deviation: {:.2f} %".format(accuracies.std()*100))
         print('K-Fold Cross validation [', u'\u2713', ']\n')
