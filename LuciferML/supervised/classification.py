@@ -1,6 +1,7 @@
 
 
 import time
+from typing import Tuple
 
 
 from sklearn.metrics import accuracy_score
@@ -8,7 +9,7 @@ from sklearn.metrics import accuracy_score
 import pandas as pd
 
 from luciferml.supervised.utils.encoder import encoder
-from luciferml.supervised.utils.preprocess import preprocess
+from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
 from luciferml.supervised.utils.classificationPredictor import classificationPredictor
 from luciferml.supervised.utils.confusionMatrix import confusionMatrix
@@ -153,10 +154,10 @@ class Classification:
         self.epochs = epochs
         self.batch_size = batch_size
         self.tune_mode = tune_mode
-
+        self.rerun = False
         self.accuracy_scores = {}
 
-    def predict(self, features, labels):
+    def predict(self, features, labels) -> Tuple:
         self.features = features
         self.labels = labels
 
@@ -164,29 +165,29 @@ class Classification:
 
         start = time.time()
         print("Started Predictor \n")
+        if not self.rerun:
+            # CHECKUP ---------------------------------------------------------------------
+            if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
+                print('TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n')
+                end = time.time()
+                print(end - start)
+                return
 
-        # CHECKUP ---------------------------------------------------------------------
-        if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
-            print('TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n')
-            end = time.time()
-            print(end - start)
-            return
+            # Encoding ---------------------------------------------------------------------
 
-        # Encoding ---------------------------------------------------------------------
+            self.features, self.labels = encoder(self.features, self.labels)
 
-        self.features, self.labels = encoder(self.features, self.labels)
+            # Sparse Check -------------------------------------------------------------
+            self.features, self.labels = sparseCheck(self.features, self.labels)
 
-        # Sparse Check -------------------------------------------------------------
-        self.features, self.labels = sparseCheck(self.features, self.labels)
+            # Preprocessing ---------------------------------------------------------------------
+            self.X_train, X_val, self.y_train, y_val = pred_preprocess(
+                self.features, self.labels, self.test_size, self.random_state)
 
-        # Preprocessing ---------------------------------------------------------------------
-        self.X_train, X_val, self.y_train, y_val = preprocess(
-            self.features, self.labels, self.test_size, self.random_state)
-
-        # Dimensionality Reduction---------------------------------------------------------------------
-        self.X_train, X_val = dimensionalityReduction(
-            self.lda, self.pca, self.X_train, X_val, self.y_train,
-            self.n_components_lda, self.n_components_pca, self.pca_kernel, start)
+            # Dimensionality Reduction---------------------------------------------------------------------
+            self.X_train, X_val = dimensionalityReduction(
+                self.lda, self.pca, self.X_train, X_val, self.y_train,
+                self.n_components_lda, self.n_components_pca, self.pca_kernel, start)
 
         # Models ---------------------------------------------------------------------
         if self.predictor == 'ann':
@@ -248,14 +249,14 @@ class Classification:
 
         # GridSearch ---------------------------------------------------------------------
         if not self.predictor == 'nb' and self.tune:
-            self.tuner()
+            self.__tuner()
 
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
         return (self.classifier_name, accuracy)
 
-    def tuner(self):
+    def __tuner(self):
         if self.predictor == 'ann':
             self.best_params = hyperTune(
                 self.classifier_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
@@ -265,7 +266,8 @@ class Classification:
         if self.tune_mode == 3:
             self.params = self.best_params
             self.tune = False
+            self.rerun = True
             self.predict(self.features, self.labels)
-            print(self.params)
+            print("Re-ran Predictor on these params :", self.params)
             print(
                 'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')

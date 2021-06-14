@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-def preprocess(features, labels, test_size, random_state):
+def pred_preprocess(features, labels, test_size, random_state):
 
     try:
         print('Applying SMOTE [*]\n')
