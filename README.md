@@ -7,7 +7,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 ### The LuciferML will help you with:
 
 1. Preprocessing Data:
-    - Emcoding
+    - Encoding
     - Splitting
     - Scaling
     - Dimensionality Reduction
@@ -18,6 +18,27 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
     
     pip install lucifer-ml
 
+## Available Preprocessing Techniques
+
+1) Skewness Correction
+
+    Takes Pandas Dataframe as input. Transforms each column in dataset except the columns given as an optional parameter.
+    Returns Transformed Data.
+    
+    Example:
+    
+        1) All Columns
+            from preprocess import Preprocess as prep
+            import pandas as pd
+            dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+            dataset = prep.skewness_correct(dataset)
+        
+        2) Except column/columns
+            from preprocess import Preprocess as prep
+            import pandas as pd
+            dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+            dataset = prep.skewness_correct(dataset,except_columns=['Purchased')
+        
 
 ## Available Modelling Techniques: 
 
