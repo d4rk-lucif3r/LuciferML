@@ -28,13 +28,13 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
     Example:
     
         1) All Columns
-            from preprocess import Preprocess as prep
+            from luciferml.preprocessing import Preprocess as prep
             import pandas as pd
             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
             dataset = prep.skewness_correct(dataset)
         
         2) Except column/columns
-            from preprocess import Preprocess as prep
+            from luciferml.preprocessing import Preprocess as prep
             import pandas as pd
             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
             dataset = prep.skewness_correct(dataset,except_columns=['Purchased')
