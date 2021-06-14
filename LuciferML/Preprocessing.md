@@ -23,7 +23,7 @@
 
      1) All Columns
 
-         from preprocess import Preprocess as prep
+         from luciferml.preprocessing import Preprocess as prep
          
          import pandas as pd
          
@@ -33,7 +33,7 @@
 
      2) Except column/columns
 
-         from preprocess import Preprocess as prep
+         from luciferml.preprocessing import Preprocess as prep
          
          import pandas as pd
          
