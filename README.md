@@ -64,7 +64,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         y = dataset.iloc[:, -1]
         cls.Classification(predictor = 'lr').predict(X, y)
 
-    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/supervised/Classification_README.md)
+    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Classification.md)
 
     
 ## Note - LuciferML rightnow supports only Classification.
