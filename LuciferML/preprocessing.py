@@ -45,9 +45,28 @@ class Preprocess:
             Dataset on which skewness correction has to be done.
         except_columns : list
             Columns for which skewness correction need not to be done.Default = []
+            
         Example:
-            from preprocess import Preprocess as prep
-            dataset = prep.skewness_correct(dataset)
+
+         1) All Columns
+
+             from luciferml.preprocessing import Preprocess as prep
+
+             import pandas as pd
+
+             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+
+             dataset = prep.skewcorrect(dataset)
+
+         2) Except column/columns
+
+             from luciferml.preprocessing import Preprocess as prep
+
+             import pandas as pd
+
+             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+
+             dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
         
         :returns: Scaled Dataset
         :rtype: pd.DataFrame
