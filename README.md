@@ -67,5 +67,5 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
     More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/supervised/Classification_README.md)
 
     
-## Note - As of v0.0.5 it LuciferML supports only Classification.
+## Note - LuciferML rightnow supports only Classification.
 ## More To be Added Soon
