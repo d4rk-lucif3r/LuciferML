@@ -38,7 +38,8 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
             import pandas as pd
             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
             dataset = prep.skewness_correct(dataset,except_columns=['Purchased')
-        
+            
+    More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Preprocessing.md)
 
 ## Available Modelling Techniques: 
 
