@@ -23,9 +23,9 @@ def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode):
         print("Best Accuracy: {:.2f} %".format(best_accuracy*100))
         print("Best Parameters:", best_parameters)
         print('Applying Grid Search Cross validation [', u'\u2713', ']\n')
-        if tune_mode == 3:
-            print('############################################### \n')
-            print('Re-running classifier with these params\n')
+        # if tune_mode == 3:
+        #     print('############################################### \n')
+        #     print('Re-running classifier with these params\n')
         return best_parameters
     except Exception as error:
         print('HyperParam Tuning Failed with Error: ', error,'\n')

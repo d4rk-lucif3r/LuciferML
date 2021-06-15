@@ -1,7 +1,7 @@
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 def confusionMatrix(y_pred, y_val):
     """
@@ -16,8 +16,8 @@ def confusionMatrix(y_pred, y_val):
         ax.set_xlabel('Predicted labels')
         ax.set_ylabel('True labels')
         ax.set_title('Confusion Matrix')
-        ax.xaxis.set_ticklabels(['0', '1'])
-        ax.yaxis.set_ticklabels(['0', '1'])
+        ax.xaxis.set_ticklabels(np.unique(y_val))
+        ax.yaxis.set_ticklabels(np.unique(y_val))
         plt.show()
         print('Confusion Matrix Done [', u'\u2713', ']\n')
     except Exception as error:

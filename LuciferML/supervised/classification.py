@@ -43,7 +43,7 @@ class Classification:
                  epochs=100,
                  batch_size=32,
                  tune_mode=1,
-                 smote= 'y',
+                 smote= 'n',
                  k_neighbors=1
                  ):
         """
@@ -272,11 +272,11 @@ class Classification:
         else:
             self.best_params = hyperTune(
             self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
-        if self.tune_mode == 3:
-            self.params = self.best_params
-            self.tune = False
-            self.rerun = True
-            self.predict(self.features, self.labels)
-            print("Re-ran Predictor on these params :", self.params)
-            print(
-                'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
+        # if self.tune_mode == 3:
+        #     self.params = self.best_params
+        #     self.tune = False
+        #     self.rerun = True
+        #     self.predict(self.features, self.labels)
+        #     print("Re-ran Predictor on these params :", self.params)
+        #     print(
+        #         'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
