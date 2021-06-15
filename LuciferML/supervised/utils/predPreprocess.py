@@ -3,15 +3,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-def pred_preprocess(features, labels, test_size, random_state):
+def pred_preprocess(features, labels, test_size, random_state, smote, k_neighbors):
 
     try:
-        print('Applying SMOTE [*]\n')
+        if smote == 'y':
+            print('Applying SMOTE [*]\n')
 
-        sm = SMOTE(k_neighbors=4)
-        features, labels = sm.fit_resample(
-            features, labels)
-        print('SMOTE Done [', u'\u2713', ']\n')
+            sm = SMOTE(k_neighbors=k_neighbors)
+            features, labels = sm.fit_resample(
+                features, labels)
+            print('SMOTE Done [', u'\u2713', ']\n')
 
         # Splitting ---------------------------------------------------------------------
         print('Splitting Data into Train and Validation Sets [*]\n')

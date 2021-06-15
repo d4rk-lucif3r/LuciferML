@@ -1,6 +1,6 @@
 # %%
 import os
-os.chdir('../')
+# os.chdir('../')
 #%%
 from luciferml.supervised import classification as cls
 from luciferml.preprocessing import Preprocess as prep
@@ -9,7 +9,7 @@ import pandas as pd
 
 #%%
 
-dataset = pd.read_csv('examples/Social_Network_Ads.csv')
+dataset = pd.read_csv('Social_Network_Ads.csv')
 dataset.head()
 #%%
 

@@ -42,7 +42,9 @@ class Classification:
                  validation_split=.20,
                  epochs=100,
                  batch_size=32,
-                 tune_mode=1
+                 tune_mode=1,
+                 smote= 'y',
+                 k_neighbors=1
                  ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, X_val using StandardScaler.
@@ -58,7 +60,7 @@ class Classification:
             lables : array
                         labels array
 
-            prediself.ctor : str
+            predictor : str
                         Predicting model to be used
                         Default 'lr'
                             Prediself.ctor Strings:
@@ -70,7 +72,7 @@ class Classification:
                                 rfc- Random Forest self.Classifier
                                 xgb- XGBoost self.Classifier
                                 ann - Artificial Neural Network
-            self.params : dict
+            params : dict
                         contains self.parameters for model
             tune : boolean
                     when True Applies GridSearch CrossValidation
@@ -120,6 +122,10 @@ class Classification:
                             1 : Basic Tune
                             2 : Intermediate Tune
                             3 : Extreme Tune (Can Take Much Time)
+            smote : str,
+                Whether to apply SMOTE. Default = 'y'
+            k_neighbors : int
+                No. of neighbours for SMOTE. Default = 1
 
         Example:
 
@@ -155,6 +161,9 @@ class Classification:
         self.batch_size = batch_size
         self.tune_mode = tune_mode
         self.rerun = False
+        self.smote = smote
+        self.k_neighbors = k_neighbors
+
         self.accuracy_scores = {}
 
     def predict(self, features, labels) -> Tuple:
@@ -182,7 +191,7 @@ class Classification:
 
             # Preprocessing ---------------------------------------------------------------------
             self.X_train, X_val, self.y_train, y_val = pred_preprocess(
-                self.features, self.labels, self.test_size, self.random_state)
+                self.features, self.labels, self.test_size, self.random_state, self.smote, self.k_neighbors)
 
             # Dimensionality Reduction---------------------------------------------------------------------
             self.X_train, X_val = dimensionalityReduction(
