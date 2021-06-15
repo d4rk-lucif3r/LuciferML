@@ -26,18 +26,26 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
     Returns Transformed Data.
     
     Example:
-    
-        1) All Columns
-            from preprocess import Preprocess as prep
-            import pandas as pd
-            dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-            dataset = prep.skewness_correct(dataset)
-        
-        2) Except column/columns
-            from preprocess import Preprocess as prep
-            import pandas as pd
-            dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-            dataset = prep.skewness_correct(dataset,except_columns=['Purchased')
+
+     1) All Columns
+
+         from luciferml.preprocessing import Preprocess as prep
+         
+         import pandas as pd
+         
+         dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+         
+         dataset = prep.skewcorrect(dataset)
+
+     2) Except column/columns
+
+         from luciferml.preprocessing import Preprocess as prep
+         
+         import pandas as pd
+         
+         dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+         
+         dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
             
     More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Preprocessing.md)
 
@@ -64,7 +72,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         y = dataset.iloc[:, -1]
         cls.Classification(predictor = 'lr').predict(X, y)
 
-    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/supervised/Classification_README.md)
+    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Classification.md)
 
     
 ## Note - LuciferML rightnow supports only Classification.
