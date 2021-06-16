@@ -1,37 +1,55 @@
-from distutils.log import error
-import tensorflow as tf
 from sklearn.model_selection import cross_val_score
 
 
-def kfold(classifier, predictor,
-          X_train, y_train, cv_folds,
+def kfold(model, predictor,
+          X_train, y_train, cv_folds,isReg
           ):
     """
     Takes predictor, input_units, epochs, batch_size, X_train, y_train, cv_folds, and accuracy_scores dictionary. 
     Performs K-Fold Cross validation and stores result in accuracy_scores dictionary and returns it.
     """
-    name = {
-        'lr': 'Logistic Regression',
-        'svm': 'Support Vector Machine',
-        'knn': 'K-Nearesr Neighbours',
-        'dt': 'Decision Trees',
-        'nb': 'Naive Bayes',
-        'rfc': 'Random Forest CLassifier',
-        'xgb': 'XGBoost Classifier',
-        'ann': 'Artificical Neural Network',
-    }
+    if not isReg:
+        name = {
+            'lr' : 'Logistic Regression',
+            'svm': 'Support Vector Machine',
+            'knn': 'K-Nearest Neighbours',
+            'dt' : 'Decision Trees',
+            'nb' : 'Naive Bayes',
+            'rfc': 'Random Forest Classifier',
+            'xgb': 'XGBoost Classifier',
+            'ann': 'Artificical Neural Network',
+        }
+        scoring = 'accuracy'
+    if isReg:
+        name = {
+            'lin' : 'Linear Regression',
+            'sgd' : 'Stochastic Gradient Descent Regressor',
+            'krr' : 'Kernel Ridge Regressor',
+            'elas': 'Elastic Net Regressot',
+            'br'  : 'Bayesian Ridge Regressor',
+            'svr' : 'Support Vector Regressor',
+            'knr' : 'K-Nearest Regressor',
+            'dt'  : 'Decision Trees',
+            'rfr' : 'Random Forest Regressor',
+            'gbr' : 'Gradient Boost Regressor',
+            'lgbm': 'LightGB Regressor',
+            'xgb' : 'XGBoost Regressor',
+            'cat' : 'Catboost Regressor',
+            'ann' : 'Artificical Neural Network',
+        }
+        scoring = 'r2'
     try:
         print('Applying K-Fold Cross validation [*]')
         accuracies = cross_val_score(
-            estimator=classifier, X=X_train, y=y_train, cv=cv_folds, scoring='accuracy')
+            estimator=model, X=X_train, y=y_train, cv=cv_folds, scoring=scoring)
         print("Accuracy: {:.2f} %".format(accuracies.mean()*100))
 
-        classifier_name = name[predictor]
+        model_name = name[predictor]
         accuracy = accuracies.mean()*100
 
         print("Standard Deviation: {:.2f} %".format(accuracies.std()*100))
         print('K-Fold Cross validation [', u'\u2713', ']\n')
-        return (classifier_name, accuracy)
+        return (model_name, accuracy)
 
     except Exception as error:
         print('K-Fold Cross Validation failed with error: ', error, '\n')

@@ -1,27 +1,28 @@
-
+#%%
 
 import time
 from typing import Tuple
+from sklearn import datasets
 
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 
 import pandas as pd
 
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
-from luciferml.supervised.utils.classificationPredictor import classificationPredictor
+from luciferml.supervised.utils.regressionPredictor import regressionPredictor
 from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
 
 
-class Classification:
+class Regression:
 
     def __init__(self,
-                 predictor='lr',
+                 predictor='lin',
                  params={},
                  tune=False,
                  test_size=.2,
@@ -35,10 +36,8 @@ class Classification:
                  output_units=1,
                  input_units=6,
                  input_activation='relu',
-                 output_activation='sigmoid',
                  optimizer='adam',
-                 metrics=['accuracy',],
-                 loss='binary_crossentropy',
+                 loss='mean_squared_error',
                  validation_split=.20,
                  epochs=100,
                  batch_size=32,
@@ -47,13 +46,15 @@ class Classification:
                  k_neighbors=1
                  ):
         """
-        Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, X_val using StandardScaler.
-        Fits every model on training set and predicts results find and plots Confusion Matrix,
+        Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
+        scales X_train, X_val using StandardScaler.
+        Fits every model on training set and predicts results,Finds R2 Score and mean square error
         finds accuracy of model applies K-Fold Cross Validation
-        and stores accuracy in variable name accuracy and model name in self.classifier name and returns both as a tuple.
-        Applies GridSearch Cross Validation and gives best self.params out from param list.
+        and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
+        Applies GridSearch Cross Validation and gives best params out from param list.
 
-        self.Parameters:
+
+        Parameters:
             features : array
                         features array
 
@@ -61,17 +62,23 @@ class Classification:
                         labels array
 
             predictor : str
-                        Predicting model to be used
-                        Default 'lr'
-                            Prediself.ctor Strings:
-                                lr - Logisitic Regression
-                                svm -SupportVector Machine
-                                knn - K-Nearest Neighbours
-                                dt - Decision Trees
-                                nb - GaussianNaive bayes
-                                rfc- Random Forest self.Classifier
-                                xgb- XGBoost self.Classifier
-                                ann - Artificial Neural Network
+                    Predicting model to be used
+                    Default 'lin'
+                        Predictor Strings:
+                                lin  - Linear Regression
+                                sgd  - Stochastic Gradient Descent Regressor
+                                elas - Elastic Net Regressot
+                                krr  - Kernel Ridge Regressor
+                                br   - Bayesian Ridge Regressor
+                                svr  - Support Vector Regressor
+                                knr  - K-Nearest Regressor
+                                dt   - Decision Trees
+                                rfr  - Random Forest Regressor
+                                gbr  - Gradient Boost Regressor
+                                lgbm - LightGB Regressor
+                                xgb  - XGBoost Regressor
+                                cat  - Catboost Regressor
+                                ann  - Artificical Neural Network
             params : dict
                         contains parameters for model
             tune : boolean
@@ -96,7 +103,7 @@ class Classification:
                     No. of components for LDA. Default = 1
             n_components_pca : int
                     No. of components for PCA. Default = 2
-            self.hidden_layers : int
+            hidden_layers : int
                     No. of default layers of ann. Default = 4
             inputs_units : int
                     No. of units in input layer. Default = 6
@@ -104,12 +111,10 @@ class Classification:
                     No. of units in output layer. Default = 6
             self.input_activation : str
                     Activation function for Hidden layers. Default = 'relu'
-            self.output_activation : str
-                    Activation function for Output layers. Default = 'sigmoid'
             optimizer: str
                     Optimizer for ann. Default = 'adam'
             loss : str
-                    loss method for ann. Default = 'binary_crossentropy'
+                    loss method for ann. Default = 'mean_squared_error'
             validation_split : float or int
                     Percentage of validation set splitting in ann. Default = .20
             epochs : int
@@ -129,11 +134,11 @@ class Classification:
 
         Example:
 
-            from luciferml.supervised import classification as cls
+            from luciferml.supervised import regression as reg
             dataset = pd.read_csv('Social_Network_Ads.csv')
             X = dataset.iloc[:, :-1]
             y = dataset.iloc[:, -1]
-            cls.Classification(predictor = 'lr').predict(X, y)
+            reg.Regression(predictor = 'lin').predict(X, y)
 
         """
 
@@ -152,9 +157,7 @@ class Classification:
         self.output_units = output_units
         self.input_units = input_units
         self.input_activation = input_activation
-        self.output_activation = output_activation
         self.optimizer = optimizer
-        self.metrics = metrics
         self.loss = loss
         self.validation_split = validation_split
         self.epochs = epochs
@@ -200,60 +203,61 @@ class Classification:
 
         # Models ---------------------------------------------------------------------
         if self.predictor == 'ann':
-            self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
+            self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
                 self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
-                self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+                self.input_activation, self.loss,
+                self.batch_size, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
             )
         else:
-            self.parameters, self.classifier = classificationPredictor(
+            self.parameters, self.regressor = regressionPredictor(
                 self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
-                self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+                self.input_activation,  self.loss,
+                self.batch_size, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
             )
 
         try:
 
             if not self.predictor == 'ann':
-                self.classifier.fit(self.X_train, self.y_train)
+                self.regressor.fit(self.X_train, self.y_train)
         except Exception as error:
             print('Model Train Failed with error: ', error, '\n')
 
         print('Model Training Done [', u'\u2713', ']\n')
         print('Predicting Data [*]\n')
         try:
-            y_pred = self.classifier.predict(X_val)
+            y_pred = self.regressor.predict(X_val)
             print('Data Prediction Done [', u'\u2713', ']\n')
         except Exception as error:
             print('Prediction Failed with error: ', error,  '\n')
 
-        # Confusion Matrix --------------------------------------------------------------
-        if self.predictor == 'ann':
-            y_pred = (y_pred > 0.5).astype("int32")
-        confusionMatrix(y_pred, y_val)
 
         # Accuracy ---------------------------------------------------------------------
         print('''Evaluating Model Performance [*]''')
         try:
-            accuracy = accuracy_score(y_val, y_pred)
-            print('Validation Accuracy is :', accuracy)
+            accuracy = r2_score(y_val, y_pred)
+            m_absolute_error = mean_absolute_error(y_val, y_pred)
+            m_squared_error = mean_squared_error(y_val, y_pred)
+            print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
+            print('Validation Mean Absolute Error is :',
+                  m_absolute_error)
+            print('Validation Mean Squared Error is :', m_squared_error, '\n')
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
 
         # K-Fold ---------------------------------------------------------------------
         if self.predictor == 'ann':
-            self.classifier_name, accuracy = kfold(
-                self.classifier_wrap,
-                self.predictor, self.X_train, self.y_train, self.cv_folds,
+            self.regressor_name, accuracy = kfold(
+                self.regressor_wrap,
+                self.predictor, self.X_train, self.y_train, self.cv_folds,True
 
 
             )
         else:
-            self.classifier_name, accuracy = kfold(
-                self.classifier,
+            self.regressor_name, accuracy = kfold(
+                self.regressor,
                 self.predictor,
-                self.X_train, self.y_train, self.cv_folds,False
+                self.X_train, self.y_train, self.cv_folds,True
             )
 
         # GridSearch ---------------------------------------------------------------------
@@ -263,15 +267,15 @@ class Classification:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.classifier_name, accuracy)
+        return (self.regressor_name, accuracy)
 
     def __tuner(self):
         if self.predictor == 'ann':
             self.best_params = hyperTune(
-                self.classifier_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+                self.regressor_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
         else:
             self.best_params = hyperTune(
-            self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+            self.regressor, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
         # if self.tune_mode == 3:
         #     self.params = self.best_params
         #     self.tune = False
@@ -279,4 +283,5 @@ class Classification:
         #     self.predict(self.features, self.labels)
         #     print("Re-ran Predictor on these params :", self.params)
         #     print(
-        #         'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
+        #         'Re-running regressor with Best Params Done[', u'\u2713', ']\n')
+
