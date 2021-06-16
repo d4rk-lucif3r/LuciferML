@@ -65,19 +65,33 @@ class Regression:
                     Predicting model to be used
                     Default 'lin'
                         Predictor Strings:
+
                                 lin  - Linear Regression
+
                                 sgd  - Stochastic Gradient Descent Regressor
+
                                 elas - Elastic Net Regressot
+
                                 krr  - Kernel Ridge Regressor
+
                                 br   - Bayesian Ridge Regressor
+
                                 svr  - Support Vector Regressor
+
                                 knr  - K-Nearest Regressor
+
                                 dt   - Decision Trees
+
                                 rfr  - Random Forest Regressor
+
                                 gbr  - Gradient Boost Regressor
+
                                 lgbm - LightGB Regressor
+
                                 xgb  - XGBoost Regressor
+
                                 cat  - Catboost Regressor
+
                                 ann  - Artificical Neural Network
             params : dict
                         contains parameters for model
@@ -135,9 +149,13 @@ class Regression:
         Example:
 
             from luciferml.supervised import regression as reg
+
             dataset = pd.read_csv('Social_Network_Ads.csv')
+
             X = dataset.iloc[:, :-1]
+
             y = dataset.iloc[:, -1]
+            
             reg.Regression(predictor = 'lin').predict(X, y)
 
         """
