@@ -63,14 +63,21 @@ class Classification:
             predictor : str
                         Predicting model to be used
                         Default 'lr'
-                            Prediself.ctor Strings:
+                            Predictor Strings:
                                 lr - Logisitic Regression
+
                                 svm -SupportVector Machine
+
                                 knn - K-Nearest Neighbours
+
                                 dt - Decision Trees
+
                                 nb - GaussianNaive bayes
+
                                 rfc- Random Forest self.Classifier
+
                                 xgb- XGBoost self.Classifier
+
                                 ann - Artificial Neural Network
             params : dict
                         contains parameters for model
@@ -130,9 +137,13 @@ class Classification:
         Example:
 
             from luciferml.supervised import classification as cls
+
             dataset = pd.read_csv('Social_Network_Ads.csv')
+
             X = dataset.iloc[:, :-1]
+
             y = dataset.iloc[:, -1]
+            
             cls.Classification(predictor = 'lr').predict(X, y)
 
         """

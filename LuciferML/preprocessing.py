@@ -40,11 +40,12 @@ class Preprocess:
     def skewcorrect(dataset, except_columns=[]) -> pd.DataFrame:
         """
         This function returns two plots distplot and probability plot for non-normalized data and after normalizing the provided data.
+        
         Parameters:
-        dataset : pd.DataFrame
-            Dataset on which skewness correction has to be done.
-        except_columns : list
-            Columns for which skewness correction need not to be done.Default = []
+            dataset : pd.DataFrame
+                Dataset on which skewness correction has to be done.
+            except_columns : list
+                Columns for which skewness correction need not to be done.Default = []
             
         Example:
 
