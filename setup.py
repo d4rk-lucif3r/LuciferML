@@ -8,10 +8,10 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name='lucifer-ml-dev',
+    name='lucifer-ml',
     packages=['luciferml', 'luciferml.supervised',
               'luciferml.supervised.utils'],
-    version='0.0.01',
+    version='0.0.15',
     license='MIT',
     description="Automated ML by d4rk-lucif3r",
     long_description=long_description,
