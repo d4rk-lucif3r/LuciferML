@@ -1,4 +1,6 @@
 name: Publish Python 🐍 distributions 📦 to PyPI 
+- name: pypi-publish
+  uses: pypa/gh-action-pypi-publish@v1.4.2
 
 on: push
 jobs:
