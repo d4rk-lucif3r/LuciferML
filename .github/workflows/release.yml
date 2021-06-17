@@ -20,5 +20,5 @@ jobs:
       run: |
         ls -la
         python setup.py sdist bdist_wheel
-        twine upload dist/*
-        repository_url: https://test.pypi.org/legacy/
+        twine upload --repository testpypi dist/*
+
