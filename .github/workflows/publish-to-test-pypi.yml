@@ -25,7 +25,7 @@ jobs:
         python 
         setup.py
         sdist
-        wheel
+        bdist_wheel
        
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
