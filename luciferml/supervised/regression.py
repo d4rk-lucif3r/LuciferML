@@ -254,11 +254,11 @@ class Regression:
         try:
             accuracy = r2_score(y_val, y_pred)
             m_absolute_error = mean_absolute_error(y_val, y_pred)
-            m_squared_error = mean_squared_error(y_val, y_pred)
+            m_squared_error = mean_squared_error(y_val, y_pred,squared=Flase)
             print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
             print('Validation Mean Absolute Error is :',
                   m_absolute_error)
-            print('Validation Mean Squared Error is :', m_squared_error, '\n')
+            print('Validation Root Mean Squared Error is :', m_squared_error, '\n')
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
@@ -290,10 +290,10 @@ class Regression:
     def __tuner(self):
         if self.predictor == 'ann':
             self.best_params = hyperTune(
-                self.regressor_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+                self.regressor_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode,True)
         else:
             self.best_params = hyperTune(
-            self.regressor, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
+            self.regressor, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode,True)
         # if self.tune_mode == 3:
         #     self.params = self.best_params
         #     self.tune = False

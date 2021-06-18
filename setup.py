@@ -9,9 +9,9 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name='lucifer-ml-dev',
-    packages=['LuciferML', 'LuciferML.supervised',
-              'LuciferML.supervised.utils'],
-    version='0.0.01',
+    packages=['luciferml', 'luciferml.supervised',
+              'luciferml.supervised.utils'],
+    version='0.0.2',
     license='MIT',
     description="Automated ML by d4rk-lucif3r",
     long_description=long_description,

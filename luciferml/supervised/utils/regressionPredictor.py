@@ -26,11 +26,11 @@ def regressionPredictor(
 
             regressor = LinearRegression(**params)
             if tune_mode == 1:
-                parameters = parameters_lin_1
+                parameters = parameters_lin
             elif tune_mode == 2:
-                parameters = parameters_lin_2
+                parameters = parameters_lin
             elif tune_mode == 3:
-                parameters = parameters_lin_3
+                parameters = parameters_lin
 
         elif predictor == 'sgd':
             print(
@@ -122,11 +122,11 @@ def regressionPredictor(
                 'Training Gradient Boosting Regressor  on Training Set [*]\n')
             regressor = GradientBoostingRegressor(**params)
             if tune_mode == 1:
-                parameters = parameters_rfr_1
+                parameters = parameters_gbr_1
             elif tune_mode == 2:
-                parameters = parameters_rfr_2
+                parameters = parameters_gbr_2
             elif tune_mode == 3:
-                parameters = parameters_rfr_3
+                parameters = parameters_gbr_3
 
         elif predictor == 'xgb':
             print('Training XGBregressor on Training Set [*]\n')

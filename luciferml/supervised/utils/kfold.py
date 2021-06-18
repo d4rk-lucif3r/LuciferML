@@ -37,7 +37,7 @@ def kfold(model, predictor,
             'cat' : 'Catboost Regressor',
             'ann' : 'Artificical Neural Network',
         }
-        scoring = 'r2'
+        scoring = 'neg_mean_squared_error '
     try:
         print('Applying K-Fold Cross validation [*]')
         accuracies = cross_val_score(
