@@ -26,11 +26,11 @@ def regressionPredictor(
 
             regressor = LinearRegression(**params)
             if tune_mode == 1:
-                parameters = parameters_lin_1
+                parameters = parameters_lin
             elif tune_mode == 2:
-                parameters = parameters_lin_2
+                parameters = parameters_lin
             elif tune_mode == 3:
-                parameters = parameters_lin_3
+                parameters = parameters_lin
 
         elif predictor == 'sgd':
             print(
