@@ -1,4 +1,3 @@
-from symbol import parameters
 import numpy as np
 
 parameters_svr_1 = [
@@ -26,18 +25,18 @@ parameters_svr_3 = [
 
 
 parameters_knr_1 = [{
-    'n_neighbors': list(range(0, 11)),
+    'n_neighbors': list(range(1, 11)),
     'weights': ['uniform', 'distance'],
     'algorithm': ['auto', 'kd_tree', 'brute'],
 }]
 parameters_knr_2 = [{
-    'n_neighbors': list(range(0, 21)),
+    'n_neighbors': list(range(1, 21)),
     'weights': ['uniform', 'distance'],
     'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
     'n_jobs': [1, 0]
 }]
 parameters_knr_3 = [{
-    'n_neighbors': list(range(0, 31)),
+    'n_neighbors': list(range(1, 31)),
     'weights': ['uniform', 'distance'],
     'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
     'n_jobs': [1, 0]
@@ -87,7 +86,7 @@ parameters_rfr_2 = [{
     'min_samples_split': [8, 10, 12],
 }]
 parameters_rfr_3 = [{
-    'criterion': ['gini', 'entropy'],
+    'criterion': ['mse', 'mae'],
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
     'bootstrap': [True, False],
     'max_depth': [4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20, 30, 40, 50, 70, 90, 120, 150],
@@ -96,7 +95,36 @@ parameters_rfr_3 = [{
     'min_samples_split': [8, 10, 12],
 }]
 
-
+parameters_gbr_1 = {
+    'learning_rate': [0.02,0.04],
+    'subsample'    : [ 0.5, 0.2, 0.1],
+    'n_estimators': [100, 200, 300, 400, 500, 750, 1000],
+    'max_depth'    : [4,6]
+    'loss': ['ls', 'lad'],
+    'criterion' : ['mse', 'mae'],
+    'min_samples_split': [8, 10],
+    'min_samples_leaf': [3, 4],
+                 }
+parameters_gbr_2 = {
+    'learning_rate': [0.02,0.03,0.04],
+    'subsample'    : [0.9, 0.5, 0.2, 0.1],
+    'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 700, 900, 1000],
+    'max_depth'    : [4,6,8]
+    'loss': ['ls', 'lad', 'huber', 'quantile'],
+    'criterion' :['friedman_mse', 'mse', 'mae'],
+    'min_samples_split': [8, 10, 12],
+    'min_samples_leaf': [3, 4, 5],
+                 }
+parameters_gbr_3 = {
+    'learning_rate': [0.01,0.02,0.03,0.04],
+    'subsample'    : [0.9, 0.5, 0.2, 0.1],
+    'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
+    'max_depth'    : [4,6,8,10]
+    'loss': ['ls', 'lad', 'huber', 'quantile'],
+    'criterion' : ['friedman_mse', 'mse', 'mae'],
+    'min_samples_split': [8, 10, 12],
+    'min_samples_leaf': [3, 4, 5],
+                 }
 parameters_ann_1 = [{'batch_size': [20, 50, 32],
                      'nb_epoch': [200, 100, 300],
                      'input_units': [5, 6, 10, ],
@@ -113,42 +141,33 @@ parameters_ann_3 = [{'batch_size': [100, 20, 50, 25, 32],
 
                      }]
 
-parameters_lin_1 = [{
-    'penalty': ['l1', 'l2', ],
-    'solver': ['newton-cg', 'liblinear', ],
-    'C': np.logspace(-4, 4, 5),
+parameters_lin = [{
+    "fit_intercept": [True, False],
+    "positive":[True, False]
 }]
-parameters_lin_2 = [{
-    'penalty': ['l1', 'l2', 'elasticnet', ],
-    'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-    'C': np.logspace(-4, 4, 15),
-}]
-parameters_lin_3 = [{
-    'penalty': ['l1', 'l2', 'elasticnet', ],
-    'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-    'C': np.logspace(-4, 4, 20),
-}]
+
 
 
 parameters_sgd_1 = {
     'penalty': ['l1', 'l2'],
-    'loss': ['hinge', 'log', 'modified_huber'],
+    'loss': ['squared_loss', 'huber', 'epsilon_insensitive'],
     'alpha':  [0.1, 0.5, 0.9, 1],
     'learning_rate': ['constant', 'optimal'],
 
 }
 parameters_sgd_2 = {
     'penalty': ['l1', 'l2', 'elasticnet', ],
-    'loss': ['hinge', 'log', 'modified_huber', 'squared_hinge'],
+    'loss': ['squared_loss', 'huber', 'epsilon_insensitive','squared_epsilon_insensitive'],
     'alpha':  [1e-4, 0.1, 0.3,
                0.5, 0.7, 0.9, 1],
+    "fit_intercept": [True, False],
     'learning_rate': ['constant', 'optimal', 'invscaling'],
     'eta0': [10, 100],
 }
 parameters_sgd_3 = {
     'penalty': ['l1', 'l2', 'elasticnet', ],
-    'loss': ['hinge', 'log', 'modified_huber', 'squared_hinge',
-             'perceptron'],
+    'loss': ['squared_loss', 'huber', 'epsilon_insensitive','squared_epsilon_insensitive'],
+    "fit_intercept": [True, False],
     'alpha':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'],
     'eta0': [1, 10, 100],
