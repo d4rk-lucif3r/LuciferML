@@ -1,18 +1,21 @@
 from sklearn.model_selection import GridSearchCV
 from luciferml.supervised import classification as cls
 
-def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode):
+def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode, isReg):
     """
     Takes classifier, tune-parameters, Training Data and no. of folds as input and Performs GridSearch Crossvalidation.
     """
     try:
+        scoring = 'accuracy'
+        if isReg:
+            scoring = 'mean_squared_error'
         print(
             'Applying Grid Search Cross validation on Mode {} [*]'.format(tune_mode))
 
         grid_search = GridSearchCV(
             estimator=classifier,
             param_grid=parameters,
-            scoring='accuracy',
+            scoring=scoring,
             cv=cv_folds,
             n_jobs=-1,
             verbose=4,
