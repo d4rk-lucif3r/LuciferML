@@ -95,36 +95,36 @@ parameters_rfr_3 = [{
     'min_samples_split': [8, 10, 12],
 }]
 
-parameters_gbr_1 = {
+parameters_gbr_1 = [{
     'learning_rate': [0.02,0.04],
     'subsample'    : [ 0.5, 0.2, 0.1],
     'n_estimators': [100, 200, 300, 400, 500, 750, 1000],
-    'max_depth'    : [4,6]
+    'max_depth'    : [4,6],
     'loss': ['ls', 'lad'],
     'criterion' : ['mse', 'mae'],
     'min_samples_split': [8, 10],
     'min_samples_leaf': [3, 4],
-                 }
-parameters_gbr_2 = {
+                 }]
+parameters_gbr_2 = [{
     'learning_rate': [0.02,0.03,0.04],
     'subsample'    : [0.9, 0.5, 0.2, 0.1],
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 700, 900, 1000],
-    'max_depth'    : [4,6,8]
+    'max_depth'    : [4,6,8],
     'loss': ['ls', 'lad', 'huber', 'quantile'],
     'criterion' :['friedman_mse', 'mse', 'mae'],
     'min_samples_split': [8, 10, 12],
     'min_samples_leaf': [3, 4, 5],
-                 }
-parameters_gbr_3 = {
+                 }]
+parameters_gbr_3 = [{
     'learning_rate': [0.01,0.02,0.03,0.04],
     'subsample'    : [0.9, 0.5, 0.2, 0.1],
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
-    'max_depth'    : [4,6,8,10]
+    'max_depth'    : [4,6,8,10],
     'loss': ['ls', 'lad', 'huber', 'quantile'],
     'criterion' : ['friedman_mse', 'mse', 'mae'],
     'min_samples_split': [8, 10, 12],
     'min_samples_leaf': [3, 4, 5],
-                 }
+                 }]
 parameters_ann_1 = [{'batch_size': [20, 50, 32],
                      'nb_epoch': [200, 100, 300],
                      'input_units': [5, 6, 10, ],
@@ -148,14 +148,14 @@ parameters_lin = [{
 
 
 
-parameters_sgd_1 = {
+parameters_sgd_1 = [{
     'penalty': ['l1', 'l2'],
     'loss': ['squared_loss', 'huber', 'epsilon_insensitive'],
     'alpha':  [0.1, 0.5, 0.9, 1],
     'learning_rate': ['constant', 'optimal'],
 
-}
-parameters_sgd_2 = {
+}]
+parameters_sgd_2 = [{
     'penalty': ['l1', 'l2', 'elasticnet', ],
     'loss': ['squared_loss', 'huber', 'epsilon_insensitive','squared_epsilon_insensitive'],
     'alpha':  [1e-4, 0.1, 0.3,
@@ -163,68 +163,68 @@ parameters_sgd_2 = {
     "fit_intercept": [True, False],
     'learning_rate': ['constant', 'optimal', 'invscaling'],
     'eta0': [10, 100],
-}
-parameters_sgd_3 = {
+}]
+parameters_sgd_3 = [{
     'penalty': ['l1', 'l2', 'elasticnet', ],
     'loss': ['squared_loss', 'huber', 'epsilon_insensitive','squared_epsilon_insensitive'],
     "fit_intercept": [True, False],
     'alpha':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'learning_rate': ['constant', 'optimal', 'invscaling', 'adaptive'],
     'eta0': [1, 10, 100],
-}
+}]
 
-parameters_ker_1 = {
+parameters_ker_1 = [{
     'alpha':  [0.1, 0.5, 0.9, 1],
     'gamma': [0.1, 0.5, 0.9, 1],
-}
-parameters_ker_2 = {
+}]
+parameters_ker_2 = [{
     'alpha': [1e-4, 0.1, 0.3,
               0.5, 0.7, 0.9, 1],
     'gamma': [1e-4, 0.1, 0.3,
               0.5, 0.7, 0.9, 1],
-}
+}]
 
-parameters_ker_3 = {
+parameters_ker_3 = [{
     'alpha':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'gamma':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
-}
+}]
 
-parameters_elas = {
+parameters_elas = [{
     'alpha':  [0.1, 0.5, 0.9, 1],
     'l1_ratio': [0, 0.25, 0.5, 0.75, 1],
-}
+}]
 
-parameters_br = {
+parameters_br = [{
     'alpha_1':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'alpha_2':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'lambda_1':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
     'lambda_1':  [1e-3, 1e-4, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9],
-}
+}]
 
-parameters_lgbm_1 = {
+parameters_lgbm_1 = [{
     'n_estimators': [100, 200, 300, 400, 500, 750, 1000],
     'min_child_weight': [1, 5, 10],
     'subsample': [0.6, 0.8, 1.0],
     'colsample_bytree': [0.6, 0.8, 1.0],
     'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
     'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50, 100],
-}
-parameters_lgbm_2 = {
+}]
+parameters_lgbm_2 = [{
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 700, 900, 1000],
     'min_child_weight': [1, 5, 10],
     'subsample': [0.6, 0.8, 1.0],
     'colsample_bytree': [0.6, 0.8, 1.0],
     'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
     'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50, 100],
-}
-parameters_lgbm_3 = {
+}]
+parameters_lgbm_3 = [{
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
     'min_child_weight': [1e-5, 1e-3, 1e-2, 1e-1, 1, 1e1, 1e2, 1e3, 1e4],
     'subsample': [0.6, 0.8, 1.0],
     'colsample_bytree': [0.6, 0.8, 1.0],
     'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
     'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50, 100],
-}
+}]
 
 parameters_xgb_1 = [{
     'min_child_weight': [1, 5, 10],
@@ -255,10 +255,10 @@ parameters_xgb_3 = [{
     'learning_rate': [0.3, 0.1, 0.03],
 }]
 
-parameters_cat = {
+parameters_cat = [{
     'depth': [6, 8, 10],
     'learning_rate': [0.01, 0.05, 0.1],
     'iterations': [30, 50, 100],
     'depth': [2, 4, 6, 8],
     'l2_leaf_reg': [0.2, 0.5, 1, 3]
-}
+}]
