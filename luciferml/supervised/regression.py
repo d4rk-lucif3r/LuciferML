@@ -254,7 +254,7 @@ class Regression:
         try:
             accuracy = r2_score(y_val, y_pred)
             m_absolute_error = mean_absolute_error(y_val, y_pred)
-            m_squared_error = mean_squared_error(y_val, y_pred,squared=Flase)
+            m_squared_error = mean_squared_error(y_val, y_pred,squared=False)
             print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
             print('Validation Mean Absolute Error is :',
                   m_absolute_error)
