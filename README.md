@@ -1,4 +1,4 @@
-![](https://i.imgur.com/y2jf81O.png)
+![](https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/logo.png)
 # LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
 
 ## About
