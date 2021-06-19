@@ -101,6 +101,6 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         y = dataset.iloc[:, -1]
         reg.Regression(predictor = 'lin').predict(X, y)
 
-    More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Regression.md)
+    More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Regression.md)
 
 ## More To be Added Soon
