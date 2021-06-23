@@ -187,7 +187,7 @@ class Regression:
         self.k_neighbors = k_neighbors
 
         self.accuracy_scores = {}
-        self.regression =  {}
+        self.result =  {}
     def predict(self, features, labels) -> Dict:
         self.features = features
         self.labels = labels
@@ -287,12 +287,12 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        self.regression('Regressor') = self.regressor_name,
-        self.regression('Accuracy') = accuracy,
-        self.regression('RMSE') = rm_squared_error,
-        self.regression('Y_Pred') = y_pred,
+        self.result['Regressor'] = self.regressor_name,
+        self.result['Accuracy'] = accuracy,
+        self.result['RMSE'] = rm_squared_error,
+        self.result['Y_Pred'] = y_pred,
         
-        return self.regression
+        return self.result
 
     def __tuner(self):
         if self.predictor == 'ann':
