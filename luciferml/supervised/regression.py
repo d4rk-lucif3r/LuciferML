@@ -1,5 +1,5 @@
 import time
-from typing import Tuple
+from typing import Dict
 
 
 
@@ -144,8 +144,8 @@ class Regression:
             k_neighbors : int
                 No. of neighbours for SMOTE. Default = 1
         Returns:
-        self.regressor_name, accuracy, rm_squared_error, y_pred
-            Tuple Containing name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
+        
+            Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
         Example:
 
@@ -187,8 +187,8 @@ class Regression:
         self.k_neighbors = k_neighbors
 
         self.accuracy_scores = {}
-
-    def predict(self, features, labels) -> Tuple:
+        self.regression =  {}
+    def predict(self, features, labels) -> Dict:
         self.features = features
         self.labels = labels
 
@@ -287,7 +287,12 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.regressor_name, accuracy, rm_squared_error, y_pred)
+        self.regression('Regressor') = self.regressor_name,
+        self.regression('Accuracy') = accuracy,
+        self.regression('RMSE') = rm_squared_error,
+        self.regression('Y_Pred') = y_pred,
+        
+        return self.regression
 
     def __tuner(self):
         if self.predictor == 'ann':
