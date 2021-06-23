@@ -7,3 +7,5 @@ scikit-learn
 imblearn
 xgboost
 tensorflow
+catboost
+lightgbm
