@@ -232,18 +232,17 @@ parameters_br = [{
 parameters_lgbm_1 = [{
     'n_estimators': [100, 200, 300, 400, 500, 750, 1000],
     'min_child_weight': [1, 5, 10],
-    'subsample': [0.6, 0.8, 1.0],
-    'colsample_bytree': [0.6, 0.8, 1.0],
-    'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
-    'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50, 100],
+    'colsample_bytree': [0.8, 1.0],
+    'reg_alpha': [0, 1, 2, 5, 7, 10],
+    'reg_lambda': [0, 1, 2, 5, 7, 10],
 }]
 parameters_lgbm_2 = [{
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 700, 900, 1000],
     'min_child_weight': [1, 5, 10],
-    'subsample': [0.6, 0.8, 1.0],
-    'colsample_bytree': [0.6, 0.8, 1.0],
-    'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50, 100],
-    'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50, 100],
+    'subsample': [ 0.8, 1.0],
+    'colsample_bytree': [ 0.8, 1.0],
+    'reg_alpha': [0, 1e-1, 1, 2, 5, 7, 10, 50],
+    'reg_lambda': [0, 1e-1, 1, 5, 10, 20, 50],
 }]
 parameters_lgbm_3 = [{
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000],
