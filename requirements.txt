@@ -6,4 +6,4 @@ matplotlib
 scikit-learn
 imblearn
 xgboost
-tensorflown
+tensorflow
