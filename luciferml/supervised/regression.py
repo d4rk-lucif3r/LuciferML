@@ -1,8 +1,6 @@
-#%%
-
 import time
 from typing import Tuple
-from sklearn import datasets
+
 
 
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
@@ -17,7 +15,7 @@ from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
-
+from luciferml.supervised.utils.intro import intro
 
 class Regression:
 
@@ -194,7 +192,8 @@ class Regression:
         # Time Function ---------------------------------------------------------------------
 
         start = time.time()
-        print("Started Predictor \n")
+        intro()
+        print("Started Lucifer-ML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
             if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
