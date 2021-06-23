@@ -143,6 +143,9 @@ class Regression:
                 Whether to apply SMOTE. Default = 'y'
             k_neighbors : int
                 No. of neighbours for SMOTE. Default = 1
+        Returns:
+        self.regressor_name, accuracy, rm_squared_error, y_pred
+            Tuple Containing name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
         Example:
 
@@ -253,11 +256,11 @@ class Regression:
         try:
             accuracy = r2_score(y_val, y_pred)
             m_absolute_error = mean_absolute_error(y_val, y_pred)
-            m_squared_error = mean_squared_error(y_val, y_pred,squared=False)
+            rm_squared_error = mean_squared_error(y_val, y_pred,squared=False)
             print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
             print('Validation Mean Absolute Error is :',
                   m_absolute_error)
-            print('Validation Root Mean Squared Error is :', m_squared_error, '\n')
+            print('Validation Root Mean Squared Error is :', rm_squared_error, '\n')
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
@@ -284,7 +287,7 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.regressor_name, accuracy)
+        return (self.regressor_name, accuracy, rm_squared_error, y_pred)
 
     def __tuner(self):
         if self.predictor == 'ann':
