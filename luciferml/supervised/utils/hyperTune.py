@@ -8,7 +8,7 @@ def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode, isR
     try:
         scoring = 'accuracy'
         if isReg:
-            scoring = 'neg_mean_squared_error '
+            scoring = 'r2'
         print(
             'Applying Grid Search Cross validation on Mode {} [*]'.format(tune_mode))
 

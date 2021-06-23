@@ -1,8 +1,6 @@
-#%%
-
 import time
 from typing import Tuple
-from sklearn import datasets
+
 
 
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
@@ -13,11 +11,10 @@ from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
 from luciferml.supervised.utils.regressionPredictor import regressionPredictor
-from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
-
+from luciferml.supervised.utils.intro import intro
 
 class Regression:
 
@@ -194,7 +191,8 @@ class Regression:
         # Time Function ---------------------------------------------------------------------
 
         start = time.time()
-        print("Started Predictor \n")
+        intro()
+        print("Started Lucifer-ML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
             if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
@@ -254,7 +252,7 @@ class Regression:
         try:
             accuracy = r2_score(y_val, y_pred)
             m_absolute_error = mean_absolute_error(y_val, y_pred)
-            m_squared_error = mean_squared_error(y_val, y_pred,squared=Flase)
+            m_squared_error = mean_squared_error(y_val, y_pred,squared=False)
             print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
             print('Validation Mean Absolute Error is :',
                   m_absolute_error)
