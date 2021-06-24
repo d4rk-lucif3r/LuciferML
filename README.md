@@ -48,7 +48,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
          dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
 
-    More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Preprocessing.md)
+    More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/Preprocessing.md)
 
 ## Available Modelling Techniques
 
@@ -73,7 +73,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         y = dataset.iloc[:, -1]
         cls.Classification(predictor = 'lr').predict(X, y)
 
-    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Classification.md)
+    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/Classification.md)
 
 2) Regression
 
@@ -102,6 +102,6 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         y = dataset.iloc[:, -1]
         reg.Regression(predictor = 'lin').predict(X, y)
 
-    More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Regression.md)
+    More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/Regression.md)
 
 ## More To be Added Soon
