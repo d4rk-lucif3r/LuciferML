@@ -1,7 +1,7 @@
 from sklearn.model_selection import GridSearchCV
 from luciferml.supervised import classification as cls
 
-def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode, isReg):
+def hyperTune(classifier, parameters, X_train, y_train, cv_folds, tune_mode, isReg=False):
     """
     Takes classifier, tune-parameters, Training Data and no. of folds as input and Performs GridSearch Crossvalidation.
     """

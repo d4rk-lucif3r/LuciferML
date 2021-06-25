@@ -256,7 +256,7 @@ class Classification:
         if self.predictor == 'ann':
             self.classifier_name, accuracy = kfold(
                 self.classifier_wrap,
-                self.predictor, self.X_train, self.y_train, self.cv_folds,
+                self.predictor, self.X_train, self.y_train, self.cv_folds
 
 
             )
@@ -264,7 +264,7 @@ class Classification:
             self.classifier_name, accuracy = kfold(
                 self.classifier,
                 self.predictor,
-                self.X_train, self.y_train, self.cv_folds,False
+                self.X_train, self.y_train, self.cv_folds
             )
 
         # GridSearch ---------------------------------------------------------------------
