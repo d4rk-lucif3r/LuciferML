@@ -75,8 +75,10 @@ Parameters:
 
 Example :
 
-        from luciferml.supervised import classification as cls
+        from luciferml.supervised.classification import Classification
         dataset = pd.read_csv('Social_Network_Ads.csv')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        cls.Classification(predictor = 'lr').predict(X, y)
+        classifier = Classification(predictor = 'lr')
+        classifier.fit(X, y)
+        result = classifier.result()

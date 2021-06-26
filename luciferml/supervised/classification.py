@@ -1,8 +1,6 @@
 
 
 import time
-from typing import Tuple
-
 
 from sklearn.metrics import accuracy_score
 
@@ -16,6 +14,7 @@ from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
+from luciferml.supervised.utils.intro import intro
 
 
 class Classification:
@@ -136,15 +135,19 @@ class Classification:
 
         Example:
 
-            from luciferml.supervised import classification as cls
-
+            from luciferml.supervised.classification import Classification
+            
             dataset = pd.read_csv('Social_Network_Ads.csv')
-
+            
             X = dataset.iloc[:, :-1]
-
+            
             y = dataset.iloc[:, -1]
             
-            cls.Classification(predictor = 'lr').predict(X, y)
+            classifier = Classification(predictor = 'lr')
+            
+            classifier.fit(X, y)
+            
+            result = classifier.result()
 
         """
 
@@ -176,15 +179,32 @@ class Classification:
         self.k_neighbors = k_neighbors
 
         self.accuracy_scores = {}
+        self.reg_result = {}
+        self.accuracy = 0
+        self.y_pred = []
+        self.kfold_accuracy = 0
+        self.classifier_name = ''
 
-    def predict(self, features, labels) -> Tuple:
+    def fit(self, features, labels):
+        """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
+        scales X_train, X_val using StandardScaler.
+        Fits every model on training set and predicts results,
+        finds accuracy of model applies K-Fold Cross Validation
+        and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
+        Applies GridSearch Cross Validation and gives best params out from param list.]
+
+        Args:
+            features ([Pandas DataFrame]): [DataFrame containing Features]
+            labels ([Pandas DataFrame]): [DataFrame containing Labels]
+        """
         self.features = features
         self.labels = labels
 
         # Time Function ---------------------------------------------------------------------
 
         start = time.time()
-        print("Started Predictor \n")
+        intro()
+        print("Started LuciferML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
             if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
@@ -233,35 +253,35 @@ class Classification:
         print('Model Training Done [', u'\u2713', ']\n')
         print('Predicting Data [*]\n')
         try:
-            y_pred = self.classifier.predict(X_val)
+            self.y_pred = self.classifier.predict(X_val)
             print('Data Prediction Done [', u'\u2713', ']\n')
         except Exception as error:
             print('Prediction Failed with error: ', error,  '\n')
 
         # Confusion Matrix --------------------------------------------------------------
         if self.predictor == 'ann':
-            y_pred = (y_pred > 0.5).astype("int32")
-        confusionMatrix(y_pred, y_val)
+            self.y_pred = (self.y_pred > 0.5).astype("int32")
+        confusionMatrix(self.y_pred, y_val)
 
         # Accuracy ---------------------------------------------------------------------
         print('''Evaluating Model Performance [*]''')
         try:
-            accuracy = accuracy_score(y_val, y_pred)
-            print('Validation Accuracy is :', accuracy)
+            self.accuracy = accuracy_score(y_val, self.y_pred)
+            print('Validation Accuracy is :', self.accuracy)
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
 
         # K-Fold ---------------------------------------------------------------------
         if self.predictor == 'ann':
-            self.classifier_name, accuracy = kfold(
+            self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier_wrap,
                 self.predictor, self.X_train, self.y_train, self.cv_folds
 
 
             )
         else:
-            self.classifier_name, accuracy = kfold(
+            self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier,
                 self.predictor,
                 self.X_train, self.y_train, self.cv_folds
@@ -274,7 +294,7 @@ class Classification:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.classifier_name, accuracy)
+        
 
     def __tuner(self):
         if self.predictor == 'ann':
@@ -283,11 +303,36 @@ class Classification:
         else:
             self.best_params = hyperTune(
             self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
-        # if self.tune_mode == 3:
-        #     self.params = self.best_params
-        #     self.tune = False
-        #     self.rerun = True
-        #     self.predict(self.features, self.labels)
-        #     print("Re-ran Predictor on these params :", self.params)
-        #     print(
-        #         'Re-running Classifier with Best Params Done[', u'\u2713', ']\n')
+        
+
+    def result(self):
+        """[Makes a dictionary containing Classifier Name, K-Fold CV Accuracy, RMSE, Prediction set.]
+
+        Returns:
+            [dict]: [Dictionary containing :
+
+                        - "Classifier" - Classifier Name
+
+                        - "Accuracy" - KFold CV Accuracy
+
+                        - "YPred" - Array for Prediction set
+                        ]
+        """
+        self.reg_result['Classifier'] = self.classifier_name
+        self.reg_result['Accuracy'] = self.kfold_accuracy
+        self.reg_result['YPred'] = self.y_pred
+
+        return self.reg_result
+
+    def predict(self, X_test):
+        """[Takes test set and returns predictions for that test set]
+
+        Args:
+            X_test ([Array]): [Array Containing Test Set]
+
+        Returns:
+            [Array]: [Predicted set for given test set]
+        """
+        predictions = self.regressor.predict(X_test)
+
+        return predictions

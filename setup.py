@@ -11,7 +11,7 @@ setup(
     name='lucifer-ml-dev',
     packages=['luciferml', 'luciferml.supervised',
               'luciferml.supervised.utils'],
-    version='0.0.04',
+    version='0.0.05',
     license='MIT',
     description="Automated ML by d4rk-lucif3r",
     long_description=long_description,

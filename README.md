@@ -66,11 +66,13 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     Example:
 
-        from luciferml.supervised import classification as cls
+        from luciferml.supervised.classification import Classification
         dataset = pd.read_csv('Social_Network_Ads.csv')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        cls.Classification(predictor = 'lr').predict(X, y)
+        classifier = Classification(predictor = 'lr')
+        classifier.fit(X, y)
+        result = classifier.result()
 
     More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Classification.md)
 
@@ -95,11 +97,13 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     Example:
 
-        from luciferml.supervised import regression as reg
+        from luciferml.supervised.regression import Regression
         dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        reg.Regression(predictor = 'lin').predict(X, y)
+        regressor = Regression(predictor = 'lin')
+        regressor.fit(X, y)
+        result = regressor.result()
 
     More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/LuciferML/Regression.md)
 

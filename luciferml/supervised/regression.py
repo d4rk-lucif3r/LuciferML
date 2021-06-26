@@ -1,6 +1,6 @@
+
 import time
 from typing import Dict
-
 
 
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
@@ -11,11 +11,11 @@ from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
 from luciferml.supervised.utils.regressionPredictor import regressionPredictor
-from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
 from luciferml.supervised.utils.intro import intro
+
 
 class Regression:
 
@@ -40,7 +40,7 @@ class Regression:
                  epochs=100,
                  batch_size=32,
                  tune_mode=1,
-                 smote= 'n',
+                 smote='n',
                  k_neighbors=1
                  ):
         """
@@ -144,20 +144,24 @@ class Regression:
             k_neighbors : int
                 No. of neighbours for SMOTE. Default = 1
         Returns:
-        
+
             Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
         Example:
 
-            from luciferml.supervised import regression as reg
-
-            dataset = pd.read_csv('Social_Network_Ads.csv')
-
+            from luciferml.supervised.regression import Regression
+            
+            dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
+            
             X = dataset.iloc[:, :-1]
-
+            
             y = dataset.iloc[:, -1]
             
-            reg.Regression(predictor = 'lin').predict(X, y)
+            regressor = Regression(predictor = 'lin')
+            
+            regressor.fit(X, y)
+            
+            result = regressor.result()
 
         """
 
@@ -187,8 +191,26 @@ class Regression:
         self.k_neighbors = k_neighbors
 
         self.accuracy_scores = {}
-        self.result =  {}
-    def predict(self, features, labels) -> Dict:
+        self.reg_result = {}
+        self.rm_squared_error = 0
+        self.accuracy = 0
+        self.y_pred = []
+        self.kfold_accuracy = 0
+        self.regressor_name = ''
+        
+    def fit(self, features, labels):
+        """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
+        scales X_train, X_val using StandardScaler.
+        Fits model on training set and predicts results, Finds R2 Score and mean square error
+        finds accuracy of model applies K-Fold Cross Validation
+        and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
+        Applies GridSearch Cross Validation and gives best params out from param list.]
+
+        Args:
+            features ([Pandas DataFrame]): [DataFrame containing Features]
+            labels ([Pandas DataFrame]): [DataFrame containing Labels]
+        """
+        
         self.features = features
         self.labels = labels
 
@@ -210,7 +232,8 @@ class Regression:
             self.features, self.labels = encoder(self.features, self.labels)
 
             # Sparse Check -------------------------------------------------------------
-            self.features, self.labels = sparseCheck(self.features, self.labels)
+            self.features, self.labels = sparseCheck(
+                self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
             self.X_train, X_val, self.y_train, y_val = pred_preprocess(
@@ -245,39 +268,40 @@ class Regression:
         print('Model Training Done [', u'\u2713', ']\n')
         print('Predicting Data [*]\n')
         try:
-            y_pred = self.regressor.predict(X_val)
+            self.y_pred = self.regressor.predict(X_val)
             print('Data Prediction Done [', u'\u2713', ']\n')
         except Exception as error:
             print('Prediction Failed with error: ', error,  '\n')
 
-
         # Accuracy ---------------------------------------------------------------------
         print('''Evaluating Model Performance [*]''')
         try:
-            accuracy = r2_score(y_val, y_pred)
-            m_absolute_error = mean_absolute_error(y_val, y_pred)
-            rm_squared_error = mean_squared_error(y_val, y_pred,squared=False)
-            print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
+            self.accuracy = r2_score(y_val, self.y_pred)
+            self.m_absolute_error = mean_absolute_error(y_val, self.y_pred)
+            self.rm_squared_error = mean_squared_error(
+                y_val, self.y_pred, squared=False)
+            print('Validation R2 Score is {:.2f} %'.format(self.accuracy*100))
             print('Validation Mean Absolute Error is :',
-                  m_absolute_error)
-            print('Validation Root Mean Squared Error is :', rm_squared_error, '\n')
+                  self.m_absolute_error)
+            print('Validation Root Mean Squared Error is :',
+                  self.rm_squared_error, '\n')
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
 
         # K-Fold ---------------------------------------------------------------------
         if self.predictor == 'ann':
-            self.regressor_name, accuracy = kfold(
+            self.regressor_name, self.kfold_accuracy = kfold(
                 self.regressor_wrap,
-                self.predictor, self.X_train, self.y_train, self.cv_folds,True
+                self.predictor, self.X_train, self.y_train, self.cv_folds, True
 
 
             )
         else:
-            self.regressor_name, accuracy = kfold(
+            self.regressor_name, self.kfold_accuracy = kfold(
                 self.regressor,
                 self.predictor,
-                self.X_train, self.y_train, self.cv_folds,True
+                self.X_train, self.y_train, self.cv_folds, True
             )
 
         # GridSearch ---------------------------------------------------------------------
@@ -287,26 +311,46 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        self.result['Regressor'] = self.regressor_name,
-        self.result['Accuracy'] = accuracy,
-        self.result['RMSE'] = rm_squared_error,
-        self.result['Y_Pred'] = y_pred,
-        
-        return self.result
 
     def __tuner(self):
         if self.predictor == 'ann':
             self.best_params = hyperTune(
-                self.regressor_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode,True)
+                self.regressor_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode, True)
         else:
             self.best_params = hyperTune(
-            self.regressor, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode,True)
-        # if self.tune_mode == 3:
-        #     self.params = self.best_params
-        #     self.tune = False
-        #     self.rerun = True
-        #     self.predict(self.features, self.labels)
-        #     print("Re-ran Predictor on these params :", self.params)
-        #     print(
-        #         'Re-running regressor with Best Params Done[', u'\u2713', ']\n')
+                self.regressor, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode, True)
 
+    def result(self):
+        """[Makes a dictionary containing Regressor Name, K-Fold CV Accuracy, RMSE, Prediction set.]
+
+        Returns:
+            [dict]: [Dictionary containing :
+
+                        - "Regressor" - Regressor Name
+
+                        - "Accuracy" - KFold CV Accuracy
+
+                        - "RMSE" - Root Mean Square
+
+                        - "YPred" - Array for Prediction set
+                        ]
+        """
+        self.reg_result['Regressor'] = self.regressor_name
+        self.reg_result['Accuracy'] = self.kfold_accuracy
+        self.reg_result['RMSE'] = self.rm_squared_error
+        self.reg_result['YPred'] = self.y_pred
+
+        return self.reg_result
+
+    def predict(self, X_test):
+        """[Takes test set and returns predictions for that test set]
+
+        Args:
+            X_test ([Array]): [Array Containing Test Set]
+
+        Returns:
+            [Array]: [Predicted set for given test set]
+        """
+        y_test = self.regressor.predict(X_test)
+
+        return y_test
