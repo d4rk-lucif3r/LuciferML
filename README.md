@@ -65,10 +65,10 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'nb' : 'Naive Bayes',
         - 'rfc': 'Random Forest Classifier',
         - 'xgb': 'XGBoost Classifier',
-        - 'ann': 'Artificical Neural Network',
+        - 'ann' : 'Artificial Neural Network',
 
     Example:
-    
+
         from luciferml.supervised.classification import Classification
         dataset = pd.read_csv('Social_Network_Ads.csv')
         X = dataset.iloc[:, :-1]
@@ -96,7 +96,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'lgbm': 'LightGB Regressor',
         - 'xgb' : 'XGBoost Regressor',
         - 'cat' : 'Catboost Regressor',
-        - 'ann' : 'Artificical Neural Network',
+        - 'ann' : 'Artificial Neural Network',
 
     Example:
 

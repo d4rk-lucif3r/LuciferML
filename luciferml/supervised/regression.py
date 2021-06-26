@@ -90,7 +90,7 @@ class Regression:
 
                                 cat  - Catboost Regressor
 
-                                ann  - Artificical Neural Network
+                                ann  - Artificial Neural Network
             params : dict
                         contains parameters for model
             tune : boolean
