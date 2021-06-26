@@ -2,7 +2,7 @@ from sklearn.model_selection import cross_val_score
 
 
 def kfold(model, predictor,
-          X_train, y_train, cv_folds,isReg
+          X_train, y_train, cv_folds,isReg=False
           ):
     """
     Takes predictor, input_units, epochs, batch_size, X_train, y_train, cv_folds, and accuracy_scores dictionary. 
