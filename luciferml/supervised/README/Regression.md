@@ -76,16 +76,18 @@ Parameters:
         smote : str,
         Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
-        No. of neighbours for SMOTE. Default = 1
-        
+        No. of neighbours for SMOTE. Default = 1 
+
 Returns:
 
         Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
 Example :
 
-        from luciferml.supervised import regression as reg
+        from luciferml.supervised.regression import Regression
         dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        reg.Regression(predictor = 'lin').predict(X, y)
+        regressor = Regression(predictor = 'lin')
+        regressor.fit(X, y)
+        result = regressor.result()
