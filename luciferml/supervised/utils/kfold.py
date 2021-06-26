@@ -2,7 +2,7 @@ from sklearn.model_selection import cross_val_score
 
 
 def kfold(model, predictor,
-          X_train, y_train, cv_folds,isReg
+          X_train, y_train, cv_folds,isReg=False
           ):
     """
     Takes predictor, input_units, epochs, batch_size, X_train, y_train, cv_folds, and accuracy_scores dictionary. 
@@ -17,7 +17,7 @@ def kfold(model, predictor,
             'nb' : 'Naive Bayes',
             'rfc': 'Random Forest Classifier',
             'xgb': 'XGBoost Classifier',
-            'ann': 'Artificical Neural Network',
+            'ann': 'Artificial Neural Network',
         }
         scoring = 'accuracy'
     if isReg:
@@ -28,27 +28,29 @@ def kfold(model, predictor,
             'elas': 'Elastic Net Regressot',
             'br'  : 'Bayesian Ridge Regressor',
             'svr' : 'Support Vector Regressor',
-            'knr' : 'K-Nearest Regressor',
+            'knr' : 'K-Neighbors Regressor',
             'dt'  : 'Decision Trees',
             'rfr' : 'Random Forest Regressor',
             'gbr' : 'Gradient Boost Regressor',
-            'lgbm': 'LightGB Regressor',
+            'lgbm': 'LightGBM Regressor',
             'xgb' : 'XGBoost Regressor',
             'cat' : 'Catboost Regressor',
-            'ann' : 'Artificical Neural Network',
+            'ann' : 'Artificial Neural Network',
         }
         scoring = 'r2'
     try:
-        print('Applying K-Fold Cross validation [*]')
+        print('Applying K-Fold Cross Validation [*]')
         accuracies = cross_val_score(
             estimator=model, X=X_train, y=y_train, cv=cv_folds, scoring=scoring)
-        print("Accuracy: {:.2f} %".format(accuracies.mean()*100))
-
+        if not isReg:
+            print("Accuracy: {:.2f} %".format(accuracies.mean()*100))
+        if isReg:
+            print("R2 Score: {:.2f} %".format(accuracies.mean()*100))
         model_name = name[predictor]
         accuracy = accuracies.mean()*100
 
         print("Standard Deviation: {:.2f} %".format(accuracies.std()*100))
-        print('K-Fold Cross validation [', u'\u2713', ']\n')
+        print('K-Fold Cross Validation [', u'\u2713', ']\n')
         return (model_name, accuracy)
 
     except Exception as error:

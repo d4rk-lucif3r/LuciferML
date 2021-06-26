@@ -1,5 +1,5 @@
 import time
-from typing import Tuple
+from typing import Dict
 
 
 
@@ -11,6 +11,7 @@ from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
 from luciferml.supervised.utils.regressionPredictor import regressionPredictor
+from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.sparseCheck import sparseCheck
@@ -142,6 +143,9 @@ class Regression:
                 Whether to apply SMOTE. Default = 'y'
             k_neighbors : int
                 No. of neighbours for SMOTE. Default = 1
+        Returns:
+        
+            Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
         Example:
 
@@ -183,8 +187,8 @@ class Regression:
         self.k_neighbors = k_neighbors
 
         self.accuracy_scores = {}
-
-    def predict(self, features, labels) -> Tuple:
+        self.result =  {}
+    def predict(self, features, labels) -> Dict:
         self.features = features
         self.labels = labels
 
@@ -252,11 +256,11 @@ class Regression:
         try:
             accuracy = r2_score(y_val, y_pred)
             m_absolute_error = mean_absolute_error(y_val, y_pred)
-            m_squared_error = mean_squared_error(y_val, y_pred,squared=False)
+            rm_squared_error = mean_squared_error(y_val, y_pred,squared=False)
             print('Validation R2 Score is {:.2f} %'.format(accuracy*100))
             print('Validation Mean Absolute Error is :',
                   m_absolute_error)
-            print('Validation Root Mean Squared Error is :', m_squared_error, '\n')
+            print('Validation Root Mean Squared Error is :', rm_squared_error, '\n')
             print('Evaluating Model Performance [', u'\u2713', ']\n')
         except Exception as error:
             print('Model Evaluation Failed with error: ', error, '\n')
@@ -283,7 +287,12 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        return (self.regressor_name, accuracy)
+        self.result['Regressor'] = self.regressor_name,
+        self.result['Accuracy'] = accuracy,
+        self.result['RMSE'] = rm_squared_error,
+        self.result['Y_Pred'] = y_pred,
+        
+        return self.result
 
     def __tuner(self):
         if self.predictor == 'ann':

@@ -77,6 +77,10 @@ Parameters:
         Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
         No. of neighbours for SMOTE. Default = 1
+        
+Returns:
+
+        Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
 
 Example :
 
