@@ -68,6 +68,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'ann': 'Artificical Neural Network',
 
     Example:
+    
         from luciferml.supervised.classification import Classification
         dataset = pd.read_csv('Social_Network_Ads.csv')
         X = dataset.iloc[:, :-1]
