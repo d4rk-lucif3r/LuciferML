@@ -1,4 +1,4 @@
-<p align="center" ><img align='center' src="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif"></p>
+<p align="center" ><img align='center' alt="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif"  src="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif"></p>
 
 # LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
 
