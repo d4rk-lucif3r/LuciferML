@@ -1,5 +1,5 @@
 
-<img alt="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/logo.png" src="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/logo.png">
+<img alt="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif" src="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif">
 
 # LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
 
