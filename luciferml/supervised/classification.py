@@ -1,11 +1,7 @@
-
-
 import time
-
 from sklearn.metrics import accuracy_score
-
+import numpy as np
 import pandas as pd
-
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
@@ -36,13 +32,13 @@ class Classification:
                  input_activation='relu',
                  output_activation='sigmoid',
                  optimizer='adam',
-                 metrics=['accuracy',],
+                 metrics=['accuracy', ],
                  loss='binary_crossentropy',
                  validation_split=.20,
                  epochs=100,
                  batch_size=32,
                  tune_mode=1,
-                 smote= 'n',
+                 smote='n',
                  k_neighbors=1
                  ):
         """
@@ -136,17 +132,17 @@ class Classification:
         Example:
 
             from luciferml.supervised.classification import Classification
-            
+
             dataset = pd.read_csv('Social_Network_Ads.csv')
-            
+
             X = dataset.iloc[:, :-1]
-            
+
             y = dataset.iloc[:, -1]
-            
+
             classifier = Classification(predictor = 'lr')
-            
+
             classifier.fit(X, y)
-            
+
             result = classifier.result()
 
         """
@@ -184,6 +180,7 @@ class Classification:
         self.y_pred = []
         self.kfold_accuracy = 0
         self.classifier_name = ''
+        self.sc = 0
 
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -218,10 +215,11 @@ class Classification:
             self.features, self.labels = encoder(self.features, self.labels)
 
             # Sparse Check -------------------------------------------------------------
-            self.features, self.labels = sparseCheck(self.features, self.labels)
+            self.features, self.labels = sparseCheck(
+                self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
-            self.X_train, X_val, self.y_train, y_val = pred_preprocess(
+            self.X_train, X_val, self.y_train, y_val, self.sc = pred_preprocess(
                 self.features, self.labels, self.test_size, self.random_state, self.smote, self.k_neighbors)
 
             # Dimensionality Reduction---------------------------------------------------------------------
@@ -294,7 +292,6 @@ class Classification:
         print('Complete [', u'\u2713', ']\n')
         end = time.time()
         print('Time Elapsed : ', end - start, 'seconds \n')
-        
 
     def __tuner(self):
         if self.predictor == 'ann':
@@ -302,8 +299,7 @@ class Classification:
                 self.classifier_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
         else:
             self.best_params = hyperTune(
-            self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
-        
+                self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode)
 
     def result(self):
         """[Makes a dictionary containing Classifier Name, K-Fold CV Accuracy, RMSE, Prediction set.]
@@ -333,6 +329,12 @@ class Classification:
         Returns:
             [Array]: [Predicted set for given test set]
         """
-        predictions = self.regressor.predict(X_test)
+        X_test = np.array(X_test)
+        if X_test.ndim == 1:
+            print('''Input Array has only 1-Dimension but 2-Dimension was expected. 
+                  Reshaping it to 2-Dimension''')
+            X_test = X_test.reshape(1, -1)
 
-        return predictions
+        y_test = self.regressor.predict(self.sc.transform(X_test))
+
+        return y_test

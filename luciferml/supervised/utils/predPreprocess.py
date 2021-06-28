@@ -29,7 +29,7 @@ def pred_preprocess(features, labels, test_size, random_state, smote, k_neighbor
         X_val = sc.transform(X_val)
         print('Scaling Done [', u'\u2713', ']\n')
 
-        return (X_train, X_val, y_train, y_val)
+        return (X_train, X_val, y_train, y_val, sc)
 
     except Exception as error:
         print('Preprocessing Failed with error: ', error, '\n')

@@ -1,12 +1,7 @@
-
 import time
-from typing import Dict
-
-
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-
 import pandas as pd
-
+import numpy as np
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
@@ -150,17 +145,17 @@ class Regression:
         Example:
 
             from luciferml.supervised.regression import Regression
-            
+
             dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
-            
+
             X = dataset.iloc[:, :-1]
-            
+
             y = dataset.iloc[:, -1]
-            
+
             regressor = Regression(predictor = 'lin')
-            
+
             regressor.fit(X, y)
-            
+
             result = regressor.result()
 
         """
@@ -197,7 +192,8 @@ class Regression:
         self.y_pred = []
         self.kfold_accuracy = 0
         self.regressor_name = ''
-        
+        self.sc = 0
+
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
         scales X_train, X_val using StandardScaler.
@@ -210,7 +206,7 @@ class Regression:
             features ([Pandas DataFrame]): [DataFrame containing Features]
             labels ([Pandas DataFrame]): [DataFrame containing Labels]
         """
-        
+
         self.features = features
         self.labels = labels
 
@@ -236,7 +232,7 @@ class Regression:
                 self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
-            self.X_train, X_val, self.y_train, y_val = pred_preprocess(
+            self.X_train, X_val, self.y_train, y_val, self.sc = pred_preprocess(
                 self.features, self.labels, self.test_size, self.random_state, self.smote, self.k_neighbors)
 
             # Dimensionality Reduction---------------------------------------------------------------------
@@ -351,6 +347,12 @@ class Regression:
         Returns:
             [Array]: [Predicted set for given test set]
         """
-        y_test = self.regressor.predict(X_test)
+        X_test = np.array(X_test)
+        if X_test.ndim == 1:
+            print('''Input Array has only 1-Dimension but 2-Dimension was expected. 
+                  Reshaping it to 2-Dimension''')
+            X_test = X_test.reshape(1, -1)
+
+        y_test = self.regressor.predict(self.sc.transform(X_test))
 
         return y_test
