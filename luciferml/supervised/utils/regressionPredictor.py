@@ -15,7 +15,8 @@ from luciferml.supervised.utils.regression_params import *
 def regressionPredictor(
         predictor, params, X_train, X_val, y_train, y_val, epochs, hidden_layers,
         input_activation, loss,
-        batch_size, validation_split, optimizer, output_units, input_units, tune_mode
+        batch_size, validation_split, optimizer, output_units, input_units, 
+        tune_mode,dropout_rate=0
 ):
     """
     Takes Predictor string , parameters , Training and Validation set and Returns a regressor for the Choosen Predictor.
@@ -159,12 +160,13 @@ def regressionPredictor(
                 parameters = parameters_cat
 
         elif predictor == 'ann':
-            def build_ann_model(input_units):
+            def build_ann_model(input_units,optimizer,rate):
                 try:
                     regressor = tf.keras.models.Sequential()
                     for i in range(0, hidden_layers):
                         regressor.add(tf.keras.layers.Dense(
                             units=input_units, activation=input_activation))
+                        regressor.add(tf.keras.layers.Dropout(rate = rate))
                     regressor.add(tf.keras.layers.Dense(
                         units=output_units))
                     regressor.compile(optimizer=optimizer,
@@ -174,7 +176,7 @@ def regressionPredictor(
                 except Exception as error:
                     print('ANN Build Failed with error :', error, '\n')
             print('Training ANN on Training Set [*]\n')
-            regressor = build_ann_model(input_units)
+            regressor = build_ann_model(input_units, optimizer,dropout_rate)
 
             ann_history = regressor.fit(
                 X_train, y_train, validation_split=validation_split,
@@ -183,7 +185,7 @@ def regressionPredictor(
             )
             regressor_wrap = tf.keras.wrappers.scikit_learn.KerasRegressor(
                 build_fn=build_ann_model, verbose=1, input_units=input_units,
-                epochs=epochs, batch_size=batch_size
+                epochs=epochs, batch_size=batch_size, optimizer=optimizer, rate = dropout_rate
             )
             if tune_mode == 1:
                 parameters = parameters_ann_1

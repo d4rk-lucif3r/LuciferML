@@ -13,7 +13,8 @@ from luciferml.supervised.utils.classification_params import *
 def classificationPredictor(
         predictor, params, X_train, X_val, y_train, y_val, epochs, hidden_layers,
         input_activation, output_activation, loss,
-        batch_size, metrics, validation_split, optimizer, output_units, input_units, tune_mode
+        batch_size, metrics, validation_split, optimizer, output_units, input_units, tune_mode,dropout_rate = 0
+        
 ):
     """
     Takes Predictor string , parameters , Training and Validation set and Returns a classifier for the Choosen Predictor.
@@ -101,12 +102,13 @@ def classificationPredictor(
                 'learning_rate': [0.3, 0.1, 0.03],
             }
         elif predictor == 'ann':
-            def build_ann_model(input_units):
+            def build_ann_model(input_units, optimizer , rate):
                 try:
                     classifier = tf.keras.models.Sequential()
                     for i in range(0, hidden_layers):
                         classifier.add(tf.keras.layers.Dense(
                             units=input_units, activation=input_activation))
+                        classifier.add(tf.keras.layers.Dropout(rate = rate))
                     classifier.add(tf.keras.layers.Dense(
                         units=output_units, activation=output_activation))
                     classifier.compile(optimizer=optimizer,
@@ -116,7 +118,7 @@ def classificationPredictor(
                 except Exception as error:
                     print('ANN Build Failed with error :', error, '\n')
             print('Training ANN on Training Set [*]\n')
-            classifier = build_ann_model(input_units)
+            classifier = build_ann_model(input_units, optimizer, dropout_rate)
 
             ann_history = classifier.fit(
                 X_train, y_train, validation_split=validation_split,
@@ -125,7 +127,7 @@ def classificationPredictor(
             )
             classifier_wrap = tf.keras.wrappers.scikit_learn.KerasClassifier(
                 build_fn=build_ann_model, verbose=1, input_units=input_units,
-                epochs=epochs, batch_size=batch_size
+                epochs=epochs, batch_size=batch_size, np.rate = dropout_rate
             )
             if tune_mode == 1:
                 parameters = parameters_ann_1

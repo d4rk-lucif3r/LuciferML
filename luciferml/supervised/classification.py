@@ -39,7 +39,8 @@ class Classification:
                  batch_size=32,
                  tune_mode=1,
                  smote='n',
-                 k_neighbors=1
+                 k_neighbors=1,
+                 dropout_rate = 0
                  ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, X_val using StandardScaler.
@@ -118,6 +119,8 @@ class Classification:
                     No. of epochs for ann. Default = 100
             batch_size :
                     Batch Size for ANN. Default = 32
+            dropout_rate : int or float
+                    rate for dropout layer. Default = 0 
             tune_mode : int
                     HyperParam tune modes. Default = 1
                         Available Modes:
@@ -169,6 +172,7 @@ class Classification:
         self.validation_split = validation_split
         self.epochs = epochs
         self.batch_size = batch_size
+        self.dropout_rate = dropout_rate
         self.tune_mode = tune_mode
         self.rerun = False
         self.smote = smote
@@ -232,7 +236,8 @@ class Classification:
             self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
                 self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
                 self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+                self.batch_size, self.metrics, self.validation_split, self.optimizer, 
+                self.output_units, self.input_units, self.tune_mode, self.dropout_rate
             )
         else:
             self.parameters, self.classifier = classificationPredictor(

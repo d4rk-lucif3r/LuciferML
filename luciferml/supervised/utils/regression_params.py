@@ -139,12 +139,13 @@ parameters_ann_1 = [{'batch_size': [20, 50, 32],
 parameters_ann_2 = [{'batch_size': [20, 50, 25, 32],
                      'nb_epoch': [200, 100, 300, 350],
                      'input_units': [5, 6, 10, 11, 12, ],
+                     'optimizer' : ['adam', 'rmsprop'],
 
                      }]
 parameters_ann_3 = [{'batch_size': [100, 20, 50, 25, 32],
                      'nb_epoch': [200, 100, 300, 400],
                      'input_units': [5, 6, 10, 11, 12, 15],
-
+                    'optimizer': ['adam', 'rmsprop'],
                      }]
 
 

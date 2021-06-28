@@ -36,7 +36,8 @@ class Regression:
                  batch_size=32,
                  tune_mode=1,
                  smote='n',
-                 k_neighbors=1
+                 k_neighbors=1,
+                 dropout_rate = 0
                  ):
         """
         Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -126,6 +127,8 @@ class Regression:
                     Percentage of validation set splitting in ann. Default = .20
             epochs : int
                     No. of epochs for ann. Default = 100
+            dropout_rate : int or float
+                    rate for dropout layer. Default = 0 
             batch_size :
                     Batch Size for ANN. Default = 32
             tune_mode : int
@@ -180,6 +183,7 @@ class Regression:
         self.validation_split = validation_split
         self.epochs = epochs
         self.batch_size = batch_size
+        self.dropout_rate = dropout_rate
         self.tune_mode = tune_mode
         self.rerun = False
         self.smote = smote
@@ -245,7 +249,7 @@ class Regression:
             self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
                 self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
                 self.input_activation, self.loss,
-                self.batch_size, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode
+                self.batch_size, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode,self.dropout_rate
             )
         else:
             self.parameters, self.regressor = regressionPredictor(
