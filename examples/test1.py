@@ -1,9 +1,8 @@
 # %%
-from sklearn.metrics import mean_squared_error
 import os
 os.chdir('../')
 #%%
-from luciferml.supervised import regression as reg
+from luciferml.supervised.regression import Regression
 # from luciferml.preprocessing import Preprocess as prep
 import pandas as pd
 
@@ -20,20 +19,14 @@ dataset.head()
 X = dataset.iloc[:, :-1]
 y = dataset.iloc[:, -1]
 #%%
-name, accuracy = reg.Regression(predictor='ann', 
-                                params={}, 
-                                cv_folds=5, batch_size= 20, input_units= 5, epochs= 200,
+regressor = Regression(predictor='lin', 
+                                cv_folds=5
                                
-).predict(X, y)
-
-# cls.Classification(predictor='svm', cv_folds=5, pca='y').predict(X, y)
-# cls.Classification(predictor='knn', cv_folds=5, pca='y').predict(X, y)
-# cls.Classification(predictor='dt', cv_folds=5, pca='y').predict(X, y)
-# cls.Classification(predictor='nb', cv_folds = 5, pca='y').predict(X, y)
-# cls.Classification(predictor='rfc', cv_folds=5, pca='y').predict(X, y)
-# cls.Classification(predictor='xgb', cv_folds=5, pca='y').predict(X, y)
-# cls.Classification(predictor='ann', epochs = 5, cv_folds = 5, pca='y').predict(X, y)
-
+)
+regressor.fit(X, y)   
+regression = regressor.result()
 
 # %%
+prediction = regressor.predict([14.96,41.76,1024.07,73.17,])
 
+# %%
