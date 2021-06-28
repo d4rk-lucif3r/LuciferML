@@ -73,6 +73,8 @@ Parameters:
                 No. of epochs for ann. Default = 100
         batch_size :
                 Batch Size for ANN. Default = 32 
+        dropout_rate : int or float
+                    rate for dropout layer. Default = 0 
         smote : str,
         Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
