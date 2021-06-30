@@ -127,7 +127,7 @@ def classificationPredictor(
             )
             classifier_wrap = tf.keras.wrappers.scikit_learn.KerasClassifier(
                 build_fn=build_ann_model, verbose=1, input_units=input_units,
-                epochs=epochs, batch_size=batch_size, np.rate = dropout_rate
+                epochs=epochs, batch_size=batch_size, rate = dropout_rate
             )
             if tune_mode == 1:
                 parameters = parameters_ann_1
