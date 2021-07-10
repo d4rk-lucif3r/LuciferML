@@ -4,7 +4,7 @@ import time
 import seaborn as sns
 from scipy.stats import norm, skew, probplot
 import matplotlib.pyplot as plt
-
+from luciferml.supervised.utils.intro import *
 
 class Preprocess:
     def __plotter(dataset, column_name, text, color):
@@ -74,7 +74,8 @@ class Preprocess:
         """
         try:
             start = time.time()
-            print("Started Corrector \n")
+            intro()
+            print("Started Preprocessor \n")
             if not isinstance(dataset, pd.DataFrame) :
                 print('TypeError: This Function expects  Pandas Dataframe but {}'.format(type(dataset)),' is given \n')
                 end = time.time()
