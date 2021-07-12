@@ -2,6 +2,9 @@
 
 # LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
 
+![PyPi](https://img.shields.io/pypi/dm/lucifer-ml?color=green&label=PyPI%20downloads&logo=pypi&logoColor=orange&style=plastic)
+![ReadTheDocs](https://img.shields.io/readthedocs/luciferml?style=plastic)
+
 ## About
 
 The LuciferML is a Semi-Automated Machine Learning Python Library that works with tabular data. It is designed to save time while doing data analysis. It will help you right from data preprocessing to Data Prediction.
