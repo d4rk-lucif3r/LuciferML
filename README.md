@@ -2,7 +2,7 @@
 
 # LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
 
-![PyPi](https://img.shields.io/pypi/dm/lucifer-ml?color=green&label=PyPI%20downloads&logo=pypi&logoColor=orange&style=plastic)
+[![Downloads](https://static.pepy.tech/personalized-badge/lucifer-ml?period=month&units=international_system&left_color=black&right_color=orange&left_text=Downloads)](https://pepy.tech/project/lucifer-ml)
 ![ReadTheDocs](https://img.shields.io/readthedocs/luciferml?style=plastic)
 
 ## About
