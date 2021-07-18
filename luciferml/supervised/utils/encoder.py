@@ -31,6 +31,7 @@ def encoder(features, labels):
         else:
             print(
                 'Features and labels are not categorical [', u'\u2713', ']\n')
+        print('Checking for Categorical Variables Done [', u'\u2713', ']\n')
         return (features, labels)
     except Exception as error:
         print('Encoding Failed with error :', error)
