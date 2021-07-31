@@ -54,13 +54,13 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     Available Models for Classification
 
-        - 'lr' : 'Logistic Regression',
-        - 'svm': 'Support Vector Machine',
-        - 'knn': 'K-Nearest Neighbours',
-        - 'dt' : 'Decision Trees',
-        - 'nb' : 'Naive Bayes',
-        - 'rfc': 'Random Forest Classifier',
-        - 'xgb': 'XGBoost Classifier',
+        - 'lr'  : 'Logistic Regression',
+        - 'svm' : 'Support Vector Machine',
+        - 'knn' : 'K-Nearest Neighbours',
+        - 'dt'  : 'Decision Trees',
+        - 'nb'  : 'Naive Bayes',
+        - 'rfc' : 'Random Forest Classifier',
+        - 'xgb' : 'XGBoost Classifier',
         - 'ann' : 'Artificial Neural Network',
 
     Example:
@@ -89,7 +89,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'dt'  : 'Decision Trees',
         - 'rfr' : 'Random Forest Regressor',
         - 'gbr' : 'Gradient Boost Regressor',
-        - 'lgbm': 'LightGB Regressor',
+        - 'lgbm': 'LightGBM Regressor',
         - 'xgb' : 'XGBoost Regressor',
         - 'cat' : 'Catboost Regressor',
         - 'ann' : 'Artificial Neural Network',

@@ -19,13 +19,13 @@ Parameters:
                 Predicting model to be used
                 Default 'lr'
                         Predictor Strings:
-                        lr - Logisitic Regression
-                        svm -SupportVector Machine
+                        lr  - Logisitic Regression
+                        svm - SupportVector Machine
                         knn - K-Nearest Neighbours
-                        dt - Decision Trees
-                        nb - GaussianNaive bayes
-                        rfc- Random Forest Classifier
-                        xgb- XGBoost Classifier
+                        dt  - Decision Trees
+                        nb  - GaussianNaive bayes
+                        rfc - Random Forest Classifier
+                        xgb - XGBoost Classifier
                         ann - Artificial Neural Network
         params : dict
                 contains parameters for model

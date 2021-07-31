@@ -30,7 +30,7 @@ Parameters:
                                 dt   - Decision Trees
                                 rfr  - Random Forest Regressor
                                 gbr  - Gradient Boost Regressor
-                                lgbm - LightGB Regressor
+                                lgbm - LightGBM Regressor
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
                                 ann  - Artificial Neural Network
