@@ -16,7 +16,7 @@ X = dataset.iloc[:, :-1]
 y = dataset.iloc[:, -1]
 
 # %%
-predictors = ['cat']
+predictors = ['all']
 
 for predictor in predictors:
     classifier = Classification(

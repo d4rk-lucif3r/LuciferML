@@ -1,24 +1,26 @@
+import tensorflow as tf
+from catboost import CatBoostClassifier
+from lightgbm import LGBMClassifier
+from luciferml.supervised.utils.classification_params import *
+from sklearn.ensemble import (AdaBoostClassifier, BaggingClassifier,
+                              ExtraTreesClassifier, GradientBoostingClassifier,
+                              RandomForestClassifier)
+from sklearn.linear_model import (LogisticRegression,
+                                  PassiveAggressiveClassifier, Perceptron,
+                                  RidgeClassifier, RidgeClassifierCV,
+                                  SGDClassifier)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier, \
-    AdaBoostClassifier, GradientBoostingClassifier, VotingClassifier, \
-    BaggingClassifier, ExtraTreesClassifier
-from sklearn.linear_model import LogisticRegression, SGDClassifier, \
-    Perceptron, PassiveAggressiveClassifier, RidgeClassifier, RidgeClassifierCV
-import tensorflow as tf
-from catboost import CatBoostClassifier
-from lightgbm import LGBMClassifier
-
-from luciferml.supervised.utils.classification_params import *
 
 
 def classificationPredictor(
         predictor, params, X_train, X_val, y_train, y_val, epochs, hidden_layers,
         input_activation, output_activation, loss,
-        batch_size, metrics, validation_split, optimizer, output_units, input_units, tune_mode, dropout_rate=0
+        batch_size, metrics, validation_split, optimizer, output_units, input_units, tune_mode, dropout_rate=0,
+        all_mode=False, verbose=False
 
 ):
     """
@@ -26,8 +28,8 @@ def classificationPredictor(
     """
     try:
         if predictor == 'lr':
-            print('Training Logistic Regression on Training Set [*]\n')
-
+            if not all_mode:
+                print('Training Logistic Regression on Training Set [*]\n')
             classifier = LogisticRegression(**params)
             if tune_mode == 1:
                 parameters = parameters_lin_1
@@ -37,7 +39,9 @@ def classificationPredictor(
                 parameters = parameters_lin_3
 
         elif predictor == 'sgd':
-            print('Training Stochastic Gradient Descent on Training Set [*]\n')
+            if not all_mode:
+                print(
+                    'Training Stochastic Gradient Descent on Training Set [*]\n')
             classifier = SGDClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_sgd_1
@@ -47,7 +51,8 @@ def classificationPredictor(
                 parameters = parameters_sgd_3
 
         elif predictor == 'perc':
-            print('Training Perceptron on Training Set [*]\n')
+            if not all_mode:
+                print('Training Perceptron on Training Set [*]\n')
             classifier = Perceptron(**params)
             if tune_mode == 1:
                 parameters = parameters_perc
@@ -57,7 +62,8 @@ def classificationPredictor(
                 parameters = parameters_perc
 
         elif predictor == 'pass':
-            print('Training Passive Aggressive on Training Set [*]\n')
+            if not all_mode:
+                print('Training Passive Aggressive on Training Set [*]\n')
             classifier = PassiveAggressiveClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_pass
@@ -67,7 +73,8 @@ def classificationPredictor(
                 parameters = parameters_pass
 
         elif predictor == 'ridg':
-            print('Training Ridge Classifier on Training Set [*]\n')
+            if not all_mode:
+                print('Training Ridge Classifier on Training Set [*]\n')
             classifier = RidgeClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_ridg
@@ -76,19 +83,9 @@ def classificationPredictor(
             elif tune_mode == 3:
                 parameters = parameters_ridg
 
-        elif predictor == 'ridgCV':
-            print('Training Ridge Classifier on Training Set [*]\n')
-            classifier = RidgeClassifierCV(**params)
-            if tune_mode == 1:
-                parameters = parameters_ridgCV
-            elif tune_mode == 2:
-                parameters = parameters_ridgCV
-            elif tune_mode == 3:
-                parameters = parameters_ridgCV
-
         elif predictor == 'svm':
-            print('Training Support Vector Machine on Training Set [*]\n')
-
+            if not all_mode:
+                print('Training Support Vector Machine on Training Set [*]\n')
             classifier = SVC(**params)
             if tune_mode == 1:
                 parameters = parameters_svm_1
@@ -98,8 +95,8 @@ def classificationPredictor(
                 parameters = parameters_svm_3
 
         elif predictor == 'knn':
-            print('Training K-Nearest Neighbours on Training Set [*]\n')
-
+            if not all_mode:
+                print('Training K-Nearest Neighbours on Training Set [*]\n')
             classifier = KNeighborsClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_knn_1
@@ -109,10 +106,10 @@ def classificationPredictor(
                 parameters = parameters_knn_3
 
         elif predictor == 'dt':
-            print('Training Decision Tree Classifier on Training Set [*]\n')
-
+            if not all_mode:
+                print(
+                    'Training Decision Tree Classifier on Training Set [*]\n')
             classifier = DecisionTreeClassifier(**params)
-
             if tune_mode == 1:
                 parameters = parameters_dt_1
             elif tune_mode == 2:
@@ -121,14 +118,15 @@ def classificationPredictor(
                 parameters = parameters_dt_3
 
         elif predictor == 'nb':
-            print('Training Naive Bayes Classifier on Training Set [*]\n')
-
+            if not all_mode:
+                print('Training Naive Bayes Classifier on Training Set [*]\n')
             classifier = GaussianNB(**params)
             parameters = {}
 
         elif predictor == 'rfc':
-            print('Training Random Forest Classifier on Training Set [*]\n')
-
+            if not all_mode:
+                print(
+                    'Training Random Forest Classifier on Training Set [*]\n')
             classifier = RandomForestClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_rfc_1
@@ -138,11 +136,10 @@ def classificationPredictor(
                 parameters = parameters_rfc_3
 
         elif predictor == 'gbc':
-            print(
-                'Training Gradient Boosting Classifier on Training Set [*]\n')
-
+            if not all_mode:
+                print(
+                    'Training Gradient Boosting Classifier on Training Set [*]\n')
             classifier = GradientBoostingClassifier(**params)
-
             if tune_mode == 1:
                 parameters = parameters_gbc_1
             elif tune_mode == 2:
@@ -150,9 +147,9 @@ def classificationPredictor(
             elif tune_mode == 3:
                 parameters = parameters_gbc_3
         elif predictor == 'ada':
-            print('Training AdaBoost Classifier on Training Set [*]\n')
+            if not all_mode:
+                print('Training AdaBoost Classifier on Training Set [*]\n')
             classifier = AdaBoostClassifier(**params)
-
             if tune_mode == 1:
                 parameters = parameters_ada_1
             elif tune_mode == 2:
@@ -161,7 +158,8 @@ def classificationPredictor(
                 parameters = parameters_ada_3
 
         elif predictor == 'bag':
-            print('Training Bagging Classifier on Training Set [*]\n')
+            if not all_mode:
+                print('Training Bagging Classifier on Training Set [*]\n')
             classifier = BaggingClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_bag_1
@@ -171,7 +169,8 @@ def classificationPredictor(
                 parameters = parameters_bag_3
 
         elif predictor == 'extc':
-            print('Training Extra Trees Classifier on Training Set [*]\n')
+            if not all_mode:
+                print('Training Extra Trees Classifier on Training Set [*]\n')
             classifier = ExtraTreesClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_extc_1
@@ -181,7 +180,8 @@ def classificationPredictor(
                 parameters = parameters_extc_3
 
         elif predictor == 'lgbm':
-            print('Training LightGBM on Training Set [*]\n')
+            if not all_mode:
+                print('Training LightGBM on Training Set [*]\n')
             classifier = LGBMClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_lgbm_1
@@ -191,7 +191,9 @@ def classificationPredictor(
                 parameters = parameters_lgbm_3
 
         elif predictor == 'cat':
-            print('Training CatBoostClassifier on Training Set [*]\n')
+            if not all_mode:
+                print('Training CatBoostClassifier on Training Set [*]\n')
+                params['verbose'] = verbose
             classifier = CatBoostClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_cat_1
@@ -201,10 +203,9 @@ def classificationPredictor(
                 parameters = parameters_cat_3
 
         elif predictor == 'xgb':
-            print('Training XGBClassifier on Training Set [*]\n')
-
+            if not all_mode:
+                print('Training XGBClassifier on Training Set [*]\n')
             classifier = XGBClassifier(**params)
-
             if tune_mode == 1:
                 parameters = parameters_xgb_1
             elif tune_mode == 2:
@@ -225,20 +226,19 @@ def classificationPredictor(
                     classifier.compile(optimizer=optimizer,
                                        loss=loss, metrics=metrics)
                     return classifier
-
                 except Exception as error:
                     print('ANN Build Failed with error :', error, '\n')
-            print('Training ANN on Training Set [*]\n')
+            if not all_mode:
+                print('Training ANN on Training Set [*]\n')
             classifier = build_ann_model(input_units, optimizer, dropout_rate)
 
             ann_history = classifier.fit(
                 X_train, y_train, validation_split=validation_split,
                 validation_data=(
-                    X_val, y_val), epochs=epochs, batch_size=batch_size
-            )
+                    X_val, y_val), epochs=epochs, batch_size=batch_size, verbose=verbose
             classifier_wrap = tf.keras.wrappers.scikit_learn.KerasClassifier(
                 build_fn=build_ann_model, verbose=1, input_units=input_units,
-                epochs=epochs, batch_size=batch_size, rate=dropout_rate
+                epochs=epochs, batch_size=batch_size, optimizer=optimizer, rate=dropout_rate,
             )
             if tune_mode == 1:
                 parameters = parameters_ann_1

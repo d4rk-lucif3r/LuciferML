@@ -23,7 +23,6 @@ Parameters:
                                 perc - Perceptron
                                 pass - Passive Aggressive Classifier
                                 ridg - Ridge Classifier
-                                ridgCV - Ridge Classifier with Cross Validation
                                 svm -SupportVector Machine
                                 knn - K-Nearest Neighbours
                                 dt - Decision Trees
@@ -37,6 +36,7 @@ Parameters:
                                 cat - CatBoost Classifier
                                 xgb- XGBoost self.Classifier
                                 ann - Artificial Neural Network
+                                all - Applies all above classifiers
         params : dict
                 contains parameters for model
         tune : boolean

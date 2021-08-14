@@ -58,8 +58,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'sgd' : 'Stochastic Gradient Descent',
         - 'perc': 'Perceptron',
         - 'pass': 'Passive Aggressive Classifier',
-        - 'ridg': 'Ridge Classifier',
-        - 'ridgCV' : 'Ridge Classifier with Cross Validation', 
+        - 'ridg': 'Ridge Classifier', 
         - 'svm' : 'Support Vector Machine',
         - 'knn' : 'K-Nearest Neighbours',
         - 'dt'  : 'Decision Trees',
@@ -73,6 +72,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'cat' : 'CatBoost Classifier',
         - 'xgb' : 'XGBoost Classifier',
         - 'ann' : 'Artificial Neural Network',
+        - 'all' : 'Applies all above classifiers'
 
     Example:
 

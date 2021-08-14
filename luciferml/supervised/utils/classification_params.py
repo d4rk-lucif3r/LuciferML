@@ -61,14 +61,7 @@ parameters_pass = [{
 
 
 parameters_ridg = [{
-    'alphas': np.logspace(-4, 4, 20),
-    'solver': ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
-}]
-
-
-parameters_ridgCV = [{
-    'alphas': np.logspace(-4, 4, 20),
-    'solver': ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
+    'alpha': np.logspace(-4, 4, 20),
 }]
 
 
@@ -149,7 +142,7 @@ parameters_gbc_2 = [{
     'loss': ['deviance', 'exponential'],
     'learning_rate': [0.1, 0.05, 0.01],
     'n_estimators': [50, 100, 150, 200, 250, 300, 400, 500, 700, 900, 1000],
-    'max_depth': [4, 6, 7,  9, 10, 12, 20,  40, 50,],
+    'max_depth': [4, 6, 7,  9, 10, 12, 20,  40, 50, ],
     'max_features': [2, 3],
     'min_samples_leaf': [3, 4, 5],
     'min_samples_split': [8, 10, 12],
