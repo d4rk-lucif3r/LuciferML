@@ -40,7 +40,7 @@ class Classification:
                  tune_mode=1,
                  smote='n',
                  k_neighbors=1,
-                 dropout_rate = 0
+                 dropout_rate=0
                  ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, X_val using StandardScaler.
@@ -61,19 +61,23 @@ class Classification:
                         Default 'lr'
                             Predictor Strings:
                                 lr - Logisitic Regression
-
+                                sgd - Stochastic Gradient Descent Classifier
+                                perc - Perceptron
+                                pass - Passive Aggressive Classifier
+                                ridg - Ridge Classifier
+                                ridgCV - Ridge Classifier with Cross Validation
                                 svm -SupportVector Machine
-
                                 knn - K-Nearest Neighbours
-
                                 dt - Decision Trees
-
                                 nb - GaussianNaive bayes
-
                                 rfc- Random Forest self.Classifier
-
+                                gbc - Gradient Boosting Classifier
+                                ada - AdaBoost Classifier
+                                bag - Bagging Classifier
+                                extc - Extra Trees Classifier
+                                lgbm - LightGBM Classifier
+                                cat - CatBoost Classifier
                                 xgb- XGBoost self.Classifier
-
                                 ann - Artificial Neural Network
             params : dict
                         contains parameters for model
@@ -236,7 +240,7 @@ class Classification:
             self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
                 self.predictor, self.params, self.X_train, X_val, self.y_train, y_val, self.epochs, self.hidden_layers,
                 self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer, 
+                self.batch_size, self.metrics, self.validation_split, self.optimizer,
                 self.output_units, self.input_units, self.tune_mode, self.dropout_rate
             )
         else:

@@ -1,4 +1,3 @@
-
 # Classification
 
 Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales X_train, X_val using StandardScaler.
@@ -9,7 +8,7 @@ Applies GridSearch Cross Validation and gives best params out from param list.
 
 Parameters:
 
-        features : array 
+        features : array
                 features array
 
         lables : array
@@ -19,23 +18,34 @@ Parameters:
                 Predicting model to be used
                 Default 'lr'
                         Predictor Strings:
-                        lr  - Logisitic Regression
-                        svm - SupportVector Machine
-                        knn - K-Nearest Neighbours
-                        dt  - Decision Trees
-                        nb  - GaussianNaive bayes
-                        rfc - Random Forest Classifier
-                        xgb - XGBoost Classifier
-                        ann - Artificial Neural Network
+                                lr - Logisitic Regression
+                                sgd - Stochastic Gradient Descent Classifier
+                                perc - Perceptron
+                                pass - Passive Aggressive Classifier
+                                ridg - Ridge Classifier
+                                ridgCV - Ridge Classifier with Cross Validation
+                                svm -SupportVector Machine
+                                knn - K-Nearest Neighbours
+                                dt - Decision Trees
+                                nb - GaussianNaive bayes
+                                rfc- Random Forest self.Classifier
+                                gbc - Gradient Boosting Classifier
+                                ada - AdaBoost Classifier
+                                bag - Bagging Classifier
+                                extc - Extra Trees Classifier
+                                lgbm - LightGBM Classifier
+                                cat - CatBoost Classifier
+                                xgb- XGBoost self.Classifier
+                                ann - Artificial Neural Network
         params : dict
                 contains parameters for model
-        tune : boolean  
-                when True Applies GridSearch CrossValidation   
+        tune : boolean
+                when True Applies GridSearch CrossValidation
                 Default is False
 
         test_size: float or int, default=.2
-                If float, should be between 0.0 and 1.0 and represent the proportion of the dataset to 
-                include in the test split. If int, represents the absolute number of test samples. 
+                If float, should be between 0.0 and 1.0 and represent the proportion of the dataset to
+                include in the test split. If int, represents the absolute number of test samples.
         cv_folds : int
                 No. of cross validation folds. Default = 10
         pca : str
@@ -54,9 +64,9 @@ Parameters:
                 No. of units in input layer. Default = 6
         output_units : int
                 No. of units in output layer. Default = 6
-        input_activation : str 
+        input_activation : str
                 Activation function for Hidden layers. Default = 'relu'
-        output_activation : str 
+        output_activation : str
                 Activation function for Output layers. Default = 'sigmoid'
         optimizer: str
                 Optimizer for ann. Default = 'adam'
@@ -67,9 +77,9 @@ Parameters:
         epochs : int
                 No. of epochs for ann. Default = 100
         batch_size :
-                Batch Size for ANN. Default = 32 
+                Batch Size for ANN. Default = 32
         dropout_rate : int or float
-                rate for dropout layer. Default = 0 
+                rate for dropout layer. Default = 0
         smote : str,
         Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
