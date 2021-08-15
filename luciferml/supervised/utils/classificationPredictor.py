@@ -193,7 +193,7 @@ def classificationPredictor(
         elif predictor == 'cat':
             if not all_mode:
                 print('Training CatBoostClassifier on Training Set [*]\n')
-                params['verbose'] = verbose
+            params['verbose'] = verbose
             classifier = CatBoostClassifier(**params)
             if tune_mode == 1:
                 parameters = parameters_cat_1
@@ -231,13 +231,16 @@ def classificationPredictor(
             if not all_mode:
                 print('Training ANN on Training Set [*]\n')
             classifier = build_ann_model(input_units, optimizer, dropout_rate)
-
+            if verbose == False:
+                verbose = 0
+            if verbose == True:
+                verbose = 'auto'
             ann_history = classifier.fit(
                 X_train, y_train, validation_split=validation_split,
                 validation_data=(
                     X_val, y_val), epochs=epochs, batch_size=batch_size, verbose=verbose)
             classifier_wrap = tf.keras.wrappers.scikit_learn.KerasClassifier(
-                build_fn=build_ann_model, verbose=1, input_units=input_units,
+                build_fn=build_ann_model, input_units=input_units,
                 epochs=epochs, batch_size=batch_size, optimizer=optimizer, rate=dropout_rate,
             )
             if tune_mode == 1:

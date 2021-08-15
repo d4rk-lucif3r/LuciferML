@@ -19,12 +19,14 @@ dataset.head()
 X = dataset.iloc[:, :-1]
 y = dataset.iloc[:, -1]
 #%%
-regressor = Regression(predictor='lin', 
-                                cv_folds=5
+regressor = Regression(predictor='all', 
+                                cv_folds=2, epochs = 5, tune = True,
                                
 )
-regressor.fit(X, y)   
+df = regressor.fit(X, y)   
+#%%
 regression = regressor.result()
+print(regression)
 
 # %%
 prediction = regressor.predict([14.96,41.76,1024.07,73.17,])

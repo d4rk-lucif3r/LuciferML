@@ -23,8 +23,8 @@ def kfold(model, predictor,
         if not all_mode:
             if not isReg:
                 print("Accuracy: {:.2f} %".format(accuracies.mean()*100))
-        if isReg:
-            print("R2 Score: {:.2f} %".format(accuracies.mean()*100))
+            if isReg:
+                print("R2 Score: {:.2f} %".format(accuracies.mean()*100))
         model_name = name[predictor]
         accuracy = accuracies.mean()*100
         if not all_mode:

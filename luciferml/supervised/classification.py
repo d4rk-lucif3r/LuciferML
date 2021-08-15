@@ -5,7 +5,7 @@ import pandas as pd
 from IPython.display import display
 from luciferml.supervised.utils.classificationPredictor import \
     classificationPredictor
-from luciferml.supervised.utils.configs import *
+from luciferml.supervised.utils.configs import classifiers
 from luciferml.supervised.utils.confusionMatrix import confusionMatrix
 from luciferml.supervised.utils.dimensionalityReduction import \
     dimensionalityReduction
@@ -144,6 +144,10 @@ class Classification:
             verbose : boolean
                 Verbosity of models. Default = False
 
+        Returns:
+            Dict Containing Name of Classifiers, Its K-Fold Cross Validated Accuracy and Prediction set
+            Dataframe containing all the models and their accuracies when predictor is 'all'
+
         Example:
 
             from luciferml.supervised.classification import Classification
@@ -251,8 +255,9 @@ class Classification:
 
         # Models ---------------------------------------------------------------------
         if self.predictor == 'all':
+            self.pred_mode = 'all'
             self._fitall()
-            return
+            return self.result_df
         elif self.predictor == 'ann':
             self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
                 self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
@@ -302,8 +307,6 @@ class Classification:
             self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier_wrap,
                 self.predictor, self.X_train, self.y_train, self.cv_folds
-
-
             )
         else:
             self.classifier_name, self.kfold_accuracy = kfold(
@@ -408,21 +411,18 @@ class Classification:
 
         Returns:
             [dict]: [Dictionary containing :
-
                         - "Classifier" - Classifier Name
-
                         - "Accuracy" - KFold CV Accuracy
-
                         - "YPred" - Array for Prediction set
                         ]
         """
-        if not self.predictor == 'all':
+        if not self.pred_mode == 'all':
             self.reg_result['Classifier'] = self.classifier_name
             self.reg_result['Accuracy'] = self.kfold_accuracy
             self.reg_result['YPred'] = self.y_pred
 
             return self.reg_result
-        if self.predictor == 'all':
+        if self.pred_mode == 'all':
             print('[Error] This method is only applicable on single predictor')
             return
 
@@ -435,7 +435,7 @@ class Classification:
         Returns:
             [Array]: [Predicted set for given test set]
         """
-        if not self.predictor == 'all':
+        if not self.pred_mode == 'all':
             X_test = np.array(X_test)
             if X_test.ndim == 1:
                 print('''Input Array has only 1-Dimension but 2-Dimension was expected. 
@@ -445,6 +445,6 @@ class Classification:
             y_test = self.regressor.predict(self.sc.transform(X_test))
 
             return y_test
-        if self.predictor == 'all':
+        if self.pred_mode == 'all':
             print('[Error] This method is only applicable on single predictor')
             return
