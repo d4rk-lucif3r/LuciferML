@@ -34,6 +34,7 @@ Parameters:
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
                                 ann  - Artificial Neural Network
+                                all  - Applies all above regressor
         params : dict
                 contains parameters for model
         tune : boolean  
