@@ -235,7 +235,7 @@ def classificationPredictor(
             ann_history = classifier.fit(
                 X_train, y_train, validation_split=validation_split,
                 validation_data=(
-                    X_val, y_val), epochs=epochs, batch_size=batch_size, verbose=verbose
+                    X_val, y_val), epochs=epochs, batch_size=batch_size, verbose=verbose)
             classifier_wrap = tf.keras.wrappers.scikit_learn.KerasClassifier(
                 build_fn=build_ann_model, verbose=1, input_units=input_units,
                 epochs=epochs, batch_size=batch_size, optimizer=optimizer, rate=dropout_rate,
