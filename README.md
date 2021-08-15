@@ -117,4 +117,6 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Regression.md)
 
-## More To be Added Soon
+---
+
+## [To-Do's](https://github.com/d4rk-lucif3r/LuciferML/issues/10)
