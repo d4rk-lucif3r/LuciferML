@@ -104,6 +104,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'xgb' : 'XGBoost Regressor',
         - 'cat' : 'Catboost Regressor',
         - 'ann' : 'Artificial Neural Network',
+        - 'all' : 'Applies all above regressors'
 
     Example:
 
