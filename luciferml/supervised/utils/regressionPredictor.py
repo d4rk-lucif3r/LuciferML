@@ -2,7 +2,9 @@ import tensorflow as tf
 from catboost import CatBoostRegressor
 from lightgbm import LGBMRegressor
 from luciferml.supervised.utils.regression_params import *
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.ensemble import (AdaBoostRegressor, BaggingRegressor,
+                              ExtraTreesRegressor, GradientBoostingRegressor,
+                              RandomForestRegressor)
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.linear_model import (BayesianRidge, ElasticNet, LinearRegression,
                                   SGDRegressor)
@@ -133,6 +135,39 @@ def regressionPredictor(
                 parameters = parameters_gbr_2
             elif tune_mode == 3:
                 parameters = parameters_gbr_3
+
+        elif predictor == 'ada':
+            if not all_mode:
+                print('Training AdaBoost Regressor on Training Set [*]\n')
+            regressor = AdaBoostRegressor(**params)
+            if tune_mode == 1:
+                parameters = parameters_ada_1
+            elif tune_mode == 2:
+                parameters = parameters_ada_2
+            elif tune_mode == 3:
+                parameters = parameters_ada_3
+
+        elif predictor == 'bag':
+            if not all_mode:
+                print('Training Bagging Regressor on Training Set [*]\n')
+            regressor = BaggingRegressor(**params)
+            if tune_mode == 1:
+                parameters = parameters_bag_1
+            elif tune_mode == 2:
+                parameters = parameters_bag_2
+            elif tune_mode == 3:
+                parameters = parameters_bag_3
+
+        elif predictor == 'extr':
+            if not all_mode:
+                print('Training Extra Trees Regressor on Training Set [*]\n')
+            regressor = ExtraTreesRegressor(**params)
+            if tune_mode == 1:
+                parameters = parameters_extr_1
+            elif tune_mode == 2:
+                parameters = parameters_extr_2
+            elif tune_mode == 3:
+                parameters = parameters_extr_3
 
         elif predictor == 'xgb':
             if not all_mode:

@@ -30,6 +30,9 @@ Parameters:
                                 dt   - Decision Trees
                                 rfr  - Random Forest Regressor
                                 gbr  - Gradient Boost Regressor
+                                ada  - AdaBoost Regressor,
+                                bag  - Bagging Regressor,
+                                extr - Extra Trees Regressor,
                                 lgbm - LightGBM Regressor
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
@@ -82,7 +85,9 @@ Parameters:
         No. of neighbours for SMOTE. Default = 1 
 
 Returns:
+
         Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
+
         Dataframe containing all the models and their accuracies when predictor is 'all'
 
 Example :

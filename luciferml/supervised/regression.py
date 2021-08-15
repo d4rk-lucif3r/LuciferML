@@ -74,6 +74,9 @@ class Regression:
                                 dt   - Decision Trees
                                 rfr  - Random Forest Regressor
                                 gbr  - Gradient Boost Regressor
+                                ada  - AdaBoost Regressor,
+                                bag  - Bagging Regressor,
+                                extr - Extra Trees Regressor,
                                 lgbm - LightGB Regressor
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
@@ -136,7 +139,9 @@ class Regression:
             verbose : boolean
                 Verbosity of models. Default = False
         Returns:
+        
             Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
+            
             Dataframe containing all the models and their accuracies when predictor is 'all'
 
         Example:
