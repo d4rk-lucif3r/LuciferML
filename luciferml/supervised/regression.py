@@ -258,7 +258,6 @@ class Regression:
         if self.predictor == 'all':
             self.pred_mode = 'all'
             self._fitall()
-            return self.result_df
         if self.predictor == 'ann':
             self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
                 self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
@@ -402,6 +401,7 @@ class Regression:
         print('Complete [', u'\u2713', ']\n')
         self.end = time.time()
         print('Time Elapsed : ', self.end - self.start, 'seconds \n')
+        return
 
     def __tuner(self, all_mode=False):
         if not all_mode:
@@ -426,6 +426,9 @@ class Regression:
                         - "RMSE" - Root Mean Square
                         - "YPred" - Array for Prediction set
                         ]
+            [dataframe] : [Dataset containing accuracy and best_params 
+                            for all predictors only when predictor = 'all' is used
+                            ]
         """
         if not self.pred_mode == 'all':
             self.reg_result['Regressor'] = self.regressor_name
@@ -435,8 +438,7 @@ class Regression:
 
             return self.reg_result
         if self.pred_mode == 'all':
-            print('[Error] This method is only applicable on single predictor')
-            return
+            return self.result_df
 
     def predict(self, X_test):
         """[Takes test set and returns predictions for that test set]

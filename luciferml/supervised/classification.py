@@ -393,7 +393,7 @@ class Classification:
         print('Complete [', u'\u2713', ']\n')
         self.end = time.time()
         print('Time Elapsed : ', self.end - self.start, 'seconds \n')
-        return self.result_df
+        return
 
     def __tuner(self, all_mode=False):
         if not all_mode:
@@ -418,6 +418,9 @@ class Classification:
                         - "Accuracy" - KFold CV Accuracy
                         - "YPred" - Array for Prediction set
                         ]
+            [dataframe] : [Dataset containing accuracy and best_params 
+                            for all predictors only when predictor = 'all' is used
+                            ]
         """
         if not self.pred_mode == 'all':
             self.reg_result['Classifier'] = self.classifier_name
@@ -426,8 +429,7 @@ class Classification:
 
             return self.reg_result
         if self.pred_mode == 'all':
-            print('[Error] This method is only applicable on single predictor')
-            return
+            return self.result_df
 
     def predict(self, X_test):
         """[Takes test set and returns predictions for that test set]
