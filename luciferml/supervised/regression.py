@@ -206,6 +206,8 @@ class Regression:
         self.bestparams = []
         self.result_df = pd.DataFrame(index=regressors.values())
 
+        self.pred_mode= ''
+
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
         scales X_train, X_val using StandardScaler.

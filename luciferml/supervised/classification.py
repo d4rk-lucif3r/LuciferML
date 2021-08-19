@@ -209,6 +209,8 @@ class Classification:
         self.bestparams = []
         self.result_df = pd.DataFrame(index=classifiers.values())
 
+        self.pred_mode = ''
+        
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
         scales X_train, self.X_val using StandardScaler.
@@ -257,7 +259,7 @@ class Classification:
         if self.predictor == 'all':
             self.pred_mode = 'all'
             self._fitall()
-            return self.result_df
+            
         elif self.predictor == 'ann':
             self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
                 self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
@@ -391,6 +393,7 @@ class Classification:
         print('Complete [', u'\u2713', ']\n')
         self.end = time.time()
         print('Time Elapsed : ', self.end - self.start, 'seconds \n')
+        return self.result_df
 
     def __tuner(self, all_mode=False):
         if not all_mode:
