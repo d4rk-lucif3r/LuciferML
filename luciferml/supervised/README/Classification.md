@@ -85,7 +85,9 @@ Parameters:
         k_neighbors : int
         No. of neighbours for SMOTE. Default = 1
 Returns:
+
             Dict Containing Name of Classifier, Its K-Fold Cross Validated Accuracy and Prediction set
+            
             Dataframe containing all the models and their accuracies when predictor is 'all'
 
 Example :
