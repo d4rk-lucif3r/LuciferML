@@ -22,6 +22,9 @@ def encoder(features, labels):
             print('Encoding Features [*]\n')
             features = np.array(ct.fit_transform(features))
             print('Encoding Features Done [', u'\u2713', ']\n')
+        else:
+            print(
+                'Features are not categorical [', u'\u2713', ']\n')
         if labels.dtype == 'O':
             le = LabelEncoder()
             print('Labels are Categorical [*] \n')
@@ -30,7 +33,7 @@ def encoder(features, labels):
             print('Encoding Labels Done [', u'\u2713', ']\n')
         else:
             print(
-                'Features and labels are not categorical [', u'\u2713', ']\n')
+                'Labels are not categorical [', u'\u2713', ']\n')
         print('Checking for Categorical Variables Done [', u'\u2713', ']\n')
         return (features, labels)
     except Exception as error:
