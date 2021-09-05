@@ -259,6 +259,7 @@ class Classification:
         if self.predictor == 'all':
             self.pred_mode = 'all'
             self._fitall()
+            return
             
         elif self.predictor == 'ann':
             self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(

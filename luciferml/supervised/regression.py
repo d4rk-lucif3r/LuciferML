@@ -258,6 +258,7 @@ class Regression:
         if self.predictor == 'all':
             self.pred_mode = 'all'
             self._fitall()
+            return
         if self.predictor == 'ann':
             self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
                 self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
