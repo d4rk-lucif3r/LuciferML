@@ -3,12 +3,10 @@ import time
 import numpy as np
 import pandas as pd
 from IPython.display import display
-from luciferml.supervised.utils.classificationPredictor import \
-    classificationPredictor
+from luciferml.supervised.utils.classificationPredictor import classificationPredictor
 from luciferml.supervised.utils.configs import classifiers
 from luciferml.supervised.utils.confusionMatrix import confusionMatrix
-from luciferml.supervised.utils.dimensionalityReduction import \
-    dimensionalityReduction
+from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.intro import intro
@@ -19,35 +17,38 @@ from sklearn.metrics import accuracy_score
 
 
 class Classification:
-
-    def __init__(self,
-                 predictor='lr',
-                 params={},
-                 tune=False,
-                 test_size=.2,
-                 cv_folds=10,
-                 random_state=42,
-                 pca_kernel='linear',
-                 n_components_lda=1,
-                 lda='n', pca='n',
-                 n_components_pca=2,
-                 hidden_layers=4,
-                 output_units=1,
-                 input_units=6,
-                 input_activation='relu',
-                 output_activation='sigmoid',
-                 optimizer='adam',
-                 metrics=['accuracy', ],
-                 loss='binary_crossentropy',
-                 validation_split=.20,
-                 epochs=100,
-                 batch_size=32,
-                 tune_mode=1,
-                 smote='n',
-                 k_neighbors=1,
-                 dropout_rate=0,
-                 verbose=False
-                 ):
+    def __init__(
+        self,
+        predictor="lr",
+        params={},
+        tune=False,
+        test_size=0.2,
+        cv_folds=10,
+        random_state=42,
+        pca_kernel="linear",
+        n_components_lda=1,
+        lda="n",
+        pca="n",
+        n_components_pca=2,
+        hidden_layers=4,
+        output_units=1,
+        input_units=6,
+        input_activation="relu",
+        output_activation="sigmoid",
+        optimizer="adam",
+        metrics=[
+            "accuracy",
+        ],
+        loss="binary_crossentropy",
+        validation_split=0.20,
+        epochs=100,
+        batch_size=32,
+        tune_mode=1,
+        smote="n",
+        k_neighbors=1,
+        dropout_rate=0,
+        verbose=False,
+    ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, self.X_val using StandardScaler.
         Fits every model on training set and predicts results find and plots Confusion Matrix,
@@ -130,7 +131,7 @@ class Classification:
             batch_size :
                     Batch Size for ANN. Default = 32
             dropout_rate : int or float
-                    rate for dropout layer. Default = 0 
+                    rate for dropout layer. Default = 0
             tune_mode : int
                     HyperParam tune modes. Default = 1
                         Available Modes:
@@ -200,7 +201,7 @@ class Classification:
         self.accuracy = 0
         self.y_pred = []
         self.kfold_accuracy = 0
-        self.classifier_name = ''
+        self.classifier_name = ""
         self.sc = 0
 
         self.kfoldacc = []
@@ -209,8 +210,8 @@ class Classification:
         self.bestparams = []
         self.result_df = pd.DataFrame(index=classifiers.values())
 
-        self.pred_mode = ''
-        
+        self.pred_mode = ""
+
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
         scales X_train, self.X_val using StandardScaler.
@@ -232,8 +233,12 @@ class Classification:
         print("Started LuciferML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
-            if not isinstance(self.features, pd.DataFrame) and not isinstance(self.labels, pd.Series):
-                print('TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n')
+            if not isinstance(self.features, pd.DataFrame) and not isinstance(
+                self.labels, pd.Series
+            ):
+                print(
+                    "TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n"
+                )
                 self.end = time.time()
                 print(self.end - self.start)
                 return
@@ -243,172 +248,306 @@ class Classification:
             self.features, self.labels = encoder(self.features, self.labels)
 
             # Sparse Check -------------------------------------------------------------
-            self.features, self.labels = sparseCheck(
-                self.features, self.labels)
+            self.features, self.labels = sparseCheck(self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
-            self.X_train, self.X_val, self.y_train, self.y_val, self.sc = pred_preprocess(
-                self.features, self.labels, self.test_size, self.random_state, self.smote, self.k_neighbors)
+            (
+                self.X_train,
+                self.X_val,
+                self.y_train,
+                self.y_val,
+                self.sc,
+            ) = pred_preprocess(
+                self.features,
+                self.labels,
+                self.test_size,
+                self.random_state,
+                self.smote,
+                self.k_neighbors,
+            )
 
             # Dimensionality Reduction---------------------------------------------------------------------
             self.X_train, self.X_val = dimensionalityReduction(
-                self.lda, self.pca, self.X_train, self.X_val, self.y_train,
-                self.n_components_lda, self.n_components_pca, self.pca_kernel, self.start)
+                self.lda,
+                self.pca,
+                self.X_train,
+                self.X_val,
+                self.y_train,
+                self.n_components_lda,
+                self.n_components_pca,
+                self.pca_kernel,
+                self.start,
+            )
 
         # Models ---------------------------------------------------------------------
-        if self.predictor == 'all':
-            self.pred_mode = 'all'
+        if self.predictor == "all":
+            self.pred_mode = "all"
             self._fitall()
             return
-            
-        elif self.predictor == 'ann':
-            self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
-                self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
-                self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer,
-                self.output_units, self.input_units, self.tune_mode, self.dropout_rate, verbose=self.verbose)
+
+        elif self.predictor == "ann":
+            (
+                self.parameters,
+                self.classifier,
+                self.classifier_wrap,
+            ) = classificationPredictor(
+                self.predictor,
+                self.params,
+                self.X_train,
+                self.X_val,
+                self.y_train,
+                self.y_val,
+                self.epochs,
+                self.hidden_layers,
+                self.input_activation,
+                self.output_activation,
+                self.loss,
+                self.batch_size,
+                self.metrics,
+                self.validation_split,
+                self.optimizer,
+                self.output_units,
+                self.input_units,
+                self.tune_mode,
+                self.dropout_rate,
+                verbose=self.verbose,
+            )
 
         else:
             self.parameters, self.classifier = classificationPredictor(
-                self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
-                self.input_activation, self.output_activation, self.loss,
-                self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode,
-                verbose=self.verbose
+                self.predictor,
+                self.params,
+                self.X_train,
+                self.X_val,
+                self.y_train,
+                self.y_val,
+                self.epochs,
+                self.hidden_layers,
+                self.input_activation,
+                self.output_activation,
+                self.loss,
+                self.batch_size,
+                self.metrics,
+                self.validation_split,
+                self.optimizer,
+                self.output_units,
+                self.input_units,
+                self.tune_mode,
+                verbose=self.verbose,
             )
 
         try:
 
-            if not self.predictor == 'ann':
+            if not self.predictor == "ann":
                 self.classifier.fit(self.X_train, self.y_train)
         except Exception as error:
-            print('Model Train Failed with error: ', error, '\n')
+            print("Model Train Failed with error: ", error, "\n")
 
-        print('Model Training Done [', u'\u2713', ']\n')
-        print('Predicting Data [*]\n')
+        print("Model Training Done [", u"\u2713", "]\n")
+        print("Predicting Data [*]\n")
         try:
             self.y_pred = self.classifier.predict(self.X_val)
-            print('Data Prediction Done [', u'\u2713', ']\n')
-            if self.predictor == 'ann':
+            print("Data Prediction Done [", u"\u2713", "]\n")
+            if self.predictor == "ann":
                 self.y_pred = (self.y_pred > 0.5).astype("int32")
         except Exception as error:
-            print('Prediction Failed with error: ', error,  '\n')
+            print("Prediction Failed with error: ", error, "\n")
 
         # Confusion Matrix --------------------------------------------------------------
         confusionMatrix(self.y_pred, self.y_val)
 
         # Accuracy ---------------------------------------------------------------------
-        print('''Evaluating Model Performance [*]''')
+        print("""Evaluating Model Performance [*]""")
         try:
             self.accuracy = accuracy_score(self.y_val, self.y_pred)
-            print('Validation Accuracy is :', self.accuracy)
-            print('Evaluating Model Performance [', u'\u2713', ']\n')
+            print("Validation Accuracy is :", self.accuracy)
+            print("Evaluating Model Performance [", u"\u2713", "]\n")
         except Exception as error:
-            print('Model Evaluation Failed with error: ', error, '\n')
+            print("Model Evaluation Failed with error: ", error, "\n")
 
         # K-Fold ---------------------------------------------------------------------
-        if self.predictor == 'ann':
+        if self.predictor == "ann":
             self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier_wrap,
-                self.predictor, self.X_train, self.y_train, self.cv_folds
+                self.predictor,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
             )
         else:
             self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier,
                 self.predictor,
-                self.X_train, self.y_train, self.cv_folds
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
             )
 
         # GridSearch ---------------------------------------------------------------------
-        if not self.predictor == 'nb' and self.tune:
+        if not self.predictor == "nb" and self.tune:
             self.__tuner()
 
-        print('Complete [', u'\u2713', ']\n')
+        print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
-        print('Time Elapsed : ', self.end - self.start, 'seconds \n')
+        print("Time Elapsed : ", self.end - self.start, "seconds \n")
 
     def _fitall(self):
-        print('Training All Classifiers [*]')
+        print("Training All Classifiers [*]")
         for index, self.predictor in enumerate(classifiers):
-            if not self.predictor == 'ann':
+            if not self.predictor == "ann":
                 self.parameters, self.classifier = classificationPredictor(
-                    self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
-                    self.input_activation, self.output_activation, self.loss,
-                    self.batch_size, self.metrics, self.validation_split, self.optimizer, self.output_units, self.input_units, self.tune_mode, all_mode=True, verbose=self.verbose
+                    self.predictor,
+                    self.params,
+                    self.X_train,
+                    self.X_val,
+                    self.y_train,
+                    self.y_val,
+                    self.epochs,
+                    self.hidden_layers,
+                    self.input_activation,
+                    self.output_activation,
+                    self.loss,
+                    self.batch_size,
+                    self.metrics,
+                    self.validation_split,
+                    self.optimizer,
+                    self.output_units,
+                    self.input_units,
+                    self.tune_mode,
+                    all_mode=True,
+                    verbose=self.verbose,
                 )
-            elif self.predictor == 'ann':
-                self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
-                    self.predictor, self.params, self.X_train, self.X_val, self.y_train, self.y_val, self.epochs, self.hidden_layers,
-                    self.input_activation, self.output_activation, self.loss,
-                    self.batch_size, self.metrics, self.validation_split, self.optimizer,
-                    self.output_units, self.input_units, self.tune_mode, self.dropout_rate, all_mode=True, verbose=self.verbose
+            elif self.predictor == "ann":
+                (
+                    self.parameters,
+                    self.classifier,
+                    self.classifier_wrap,
+                ) = classificationPredictor(
+                    self.predictor,
+                    self.params,
+                    self.X_train,
+                    self.X_val,
+                    self.y_train,
+                    self.y_val,
+                    self.epochs,
+                    self.hidden_layers,
+                    self.input_activation,
+                    self.output_activation,
+                    self.loss,
+                    self.batch_size,
+                    self.metrics,
+                    self.validation_split,
+                    self.optimizer,
+                    self.output_units,
+                    self.input_units,
+                    self.tune_mode,
+                    self.dropout_rate,
+                    all_mode=True,
+                    verbose=self.verbose,
                 )
             try:
 
-                if not self.predictor == 'ann':
+                if not self.predictor == "ann":
                     self.classifier.fit(self.X_train, self.y_train)
             except Exception as error:
-                print(classifiers[self.predictor],
-                      'Model Train Failed with error: ', error, '\n')
+                print(
+                    classifiers[self.predictor],
+                    "Model Train Failed with error: ",
+                    error,
+                    "\n",
+                )
             try:
                 self.y_pred = self.classifier.predict(self.X_val)
             except Exception as error:
-                print(classifiers[self.predictor],
-                      'Data Prediction Failed with error: ', error,  '\n')
-            if self.predictor == 'ann':
+                print(
+                    classifiers[self.predictor],
+                    "Data Prediction Failed with error: ",
+                    error,
+                    "\n",
+                )
+            if self.predictor == "ann":
                 self.y_pred = (self.y_pred > 0.5).astype("int32")
 
             # Accuracy ---------------------------------------------------------------------
             try:
                 self.accuracy = accuracy_score(self.y_val, self.y_pred)
-                self.acc.append(self.accuracy*100)
+                self.acc.append(self.accuracy * 100)
             except Exception as error:
-                print(classifiers[self.predictor],
-                      'Evaluation Failed with error: ', error, '\n')
+                print(
+                    classifiers[self.predictor],
+                    "Evaluation Failed with error: ",
+                    error,
+                    "\n",
+                )
 
             # K-Fold ---------------------------------------------------------------------
-            if self.predictor == 'ann':
+            if self.predictor == "ann":
                 self.classifier_name, self.kfold_accuracy = kfold(
                     self.classifier_wrap,
-                    self.predictor, self.X_train, self.y_train, self.cv_folds, all_mode=True
+                    self.predictor,
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    all_mode=True,
                 )
             else:
                 self.classifier_name, self.kfold_accuracy = kfold(
                     self.classifier,
                     self.predictor,
-                    self.X_train, self.y_train, self.cv_folds, all_mode=True
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    all_mode=True,
                 )
             self.kfoldacc.append(self.kfold_accuracy)
             # GridSearch ---------------------------------------------------------------------
-            if not self.predictor == 'nb' and self.tune:
+            if not self.predictor == "nb" and self.tune:
                 self.__tuner(all_mode=True)
-            if self.predictor == 'nb':
-                self.best_params = ''
+            if self.predictor == "nb":
+                self.best_params = ""
                 self.best_accuracy = self.kfold_accuracy
-        self.result_df['Accuracy'] = self.acc
-        self.result_df['KFold Accuracy'] = self.kfoldacc
+        self.result_df["Accuracy"] = self.acc
+        self.result_df["KFold Accuracy"] = self.kfoldacc
         if self.tune:
-            self.result_df['Best Parameters'] = self.bestparams
-            self.result_df['Best Accuracy'] = self.bestacc
+            self.result_df["Best Parameters"] = self.bestparams
+            self.result_df["Best Accuracy"] = self.bestacc
 
         display(self.result_df)
-        print('Complete [', u'\u2713', ']\n')
+        print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
-        print('Time Elapsed : ', self.end - self.start, 'seconds \n')
+        print("Time Elapsed : ", self.end - self.start, "seconds \n")
         return
 
-    def __tuner(self, all_mode=False):
+    def _tuner(self, all_mode=False):
         if not all_mode:
             print(
-                'Applying Grid Search Cross validation on Mode {} [*]'.format(self.tune_mode))
-        if self.predictor == 'ann':
+                "Applying Grid Search Cross validation on Mode {} [*]".format(
+                    self.tune_mode
+                )
+            )
+        if self.predictor == "ann":
             self.best_params, self.best_accuracy = hyperTune(
-                self.classifier_wrap, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode, all_mode=all_mode)
+                self.classifier_wrap,
+                self.parameters,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+                self.tune_mode,
+                all_mode=all_mode,
+            )
         else:
             self.best_params, self.best_accuracy = hyperTune(
-                self.classifier, self.parameters, self.X_train, self.y_train, self.cv_folds, self.tune_mode, all_mode=all_mode)
+                self.classifier,
+                self.parameters,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+                self.tune_mode,
+                all_mode=all_mode,
+            )
 
         self.bestparams.append(self.best_params)
-        self.bestacc.append(self.best_accuracy*100)
+        self.bestacc.append(self.best_accuracy * 100)
 
     def result(self):
         """[Makes a dictionary containing Classifier Name, K-Fold CV Accuracy, RMSE, Prediction set.]
@@ -419,17 +558,17 @@ class Classification:
                         - "Accuracy" - KFold CV Accuracy
                         - "YPred" - Array for Prediction set
                         ]
-            [dataframe] : [Dataset containing accuracy and best_params 
+            [dataframe] : [Dataset containing accuracy and best_params
                             for all predictors only when predictor = 'all' is used
                             ]
         """
-        if not self.pred_mode == 'all':
-            self.reg_result['Classifier'] = self.classifier_name
-            self.reg_result['Accuracy'] = self.kfold_accuracy
-            self.reg_result['YPred'] = self.y_pred
+        if not self.pred_mode == "all":
+            self.reg_result["Classifier"] = self.classifier_name
+            self.reg_result["Accuracy"] = self.kfold_accuracy
+            self.reg_result["YPred"] = self.y_pred
 
             return self.reg_result
-        if self.pred_mode == 'all':
+        if self.pred_mode == "all":
             return self.result_df
 
     def predict(self, X_test):
@@ -441,16 +580,18 @@ class Classification:
         Returns:
             [Array]: [Predicted set for given test set]
         """
-        if not self.pred_mode == 'all':
+        if not self.pred_mode == "all":
             X_test = np.array(X_test)
             if X_test.ndim == 1:
-                print('''Input Array has only 1-Dimension but 2-Dimension was expected. 
-                    Reshaping it to 2-Dimension''')
+                print(
+                    """Input Array has only 1-Dimension but 2-Dimension was expected. 
+                    Reshaping it to 2-Dimension"""
+                )
                 X_test = X_test.reshape(1, -1)
 
             y_test = self.regressor.predict(self.sc.transform(X_test))
 
             return y_test
-        if self.pred_mode == 'all':
-            print('[Error] This method is only applicable on single predictor')
+        if self.pred_mode == "all":
+            print("[Error] This method is only applicable on single predictor")
             return
