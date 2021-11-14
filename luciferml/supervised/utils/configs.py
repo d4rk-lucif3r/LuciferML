@@ -37,3 +37,5 @@ regressors = {
     "cat": "Catboost Regressor",
     "ann": "Artificial Neural Network",
 }
+
+params_use_warning = "Params will not work with predictor = 'all'. Settings params = {} "

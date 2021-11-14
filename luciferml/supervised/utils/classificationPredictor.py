@@ -215,6 +215,7 @@ def classificationPredictor(
                 print("Training CatBoostClassifier on Training Set [*]\n")
             params["verbose"] = verbose
             classifier = CatBoostClassifier(**params)
+            params.pop("verbose")
             if tune_mode == 1:
                 parameters = parameters_cat_1
             elif tune_mode == 2:

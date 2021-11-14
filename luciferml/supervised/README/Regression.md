@@ -9,12 +9,11 @@ and stores its accuracies in a dictionary containing Model name as Key and accur
 Applies GridSearch Cross Validation and gives best params out from param list.
 
 Parameters:
-
-        features : array 
-                features array
+        features : array
+                        features array
 
         lables : array
-                labels array
+                        labels array
 
         predictor : str
                 Predicting model to be used
@@ -22,7 +21,7 @@ Parameters:
                         Predictor Strings:
                                 lin  - Linear Regression
                                 sgd  - Stochastic Gradient Descent Regressor
-                                elas - Elastic Net Regressot
+                                elas - Elastic Net Regressor
                                 krr  - Kernel Ridge Regressor
                                 br   - Bayesian Ridge Regressor
                                 svr  - Support Vector Regressor
@@ -33,20 +32,23 @@ Parameters:
                                 ada  - AdaBoost Regressor,
                                 bag  - Bagging Regressor,
                                 extr - Extra Trees Regressor,
-                                lgbm - LightGBM Regressor
+                                lgbm - LightGB Regressor
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
                                 ann  - Artificial Neural Network
-                                all  - Applies all above regressor
+                                all  - Applies all above regressors
         params : dict
-                contains parameters for model
-        tune : boolean  
-                when True Applies GridSearch CrossValidation   
+                        contains parameters for model
+        tune : boolean
+                when True Applies GridSearch CrossValidation
                 Default is False
 
         test_size: float or int, default=.2
-                If float, should be between 0.0 and 1.0 and represent the proportion of the dataset to 
-                include in the test split. If int, represents the absolute number of test samples. 
+                        If float, should be between 0.0 and 1.0 and represent
+                        the proportion of the dataset to include in
+                        the test split.
+                        If int, represents the absolute number of test samples.
+
         cv_folds : int
                 No. of cross validation folds. Default = 10
         pca : str
@@ -65,7 +67,7 @@ Parameters:
                 No. of units in input layer. Default = 6
         output_units : int
                 No. of units in output layer. Default = 6
-        input_activation : str 
+        input_activation : str
                 Activation function for Hidden layers. Default = 'relu'
         optimizer: str
                 Optimizer for ann. Default = 'adam'
@@ -75,14 +77,24 @@ Parameters:
                 Percentage of validation set splitting in ann. Default = .20
         epochs : int
                 No. of epochs for ann. Default = 100
-        batch_size :
-                Batch Size for ANN. Default = 32 
         dropout_rate : int or float
-                    rate for dropout layer. Default = 0 
+                rate for dropout layer. Default = 0
+        batch_size :
+                Batch Size for ANN. Default = 32
+        tune_mode : int
+                HyperParam tune modes. Default = 1
+                        Available Modes:
+                        1 : Basic Tune
+                        2 : Intermediate Tune
+                        3 : Extreme Tune (Can Take Much Time)
         smote : str,
-        Whether to apply SMOTE. Default = 'y'
+                Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
-        No. of neighbours for SMOTE. Default = 1 
+                No. of neighbours for SMOTE. Default = 1
+        verbose : boolean
+                Verbosity of models. Default = False
+        exclude_models : list
+                List of models to be excluded when using predictor = 'all' . Default = []
 
 Returns:
 

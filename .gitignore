@@ -129,5 +129,9 @@ dmypy.json
 .pyre/
 
 # models
-*/catboost_info/*
-/catboost_info/*
+*catboost_info/*
+*lucifer_ml_info/*
+#venv
+*venv/*
+#misc
+*test*

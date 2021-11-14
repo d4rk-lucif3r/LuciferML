@@ -11,7 +11,6 @@ def confusionMatrix(y_pred, y_val):
     try:
         print("""Making Confusion Matrix [*]""")
         cm = confusion_matrix(y_val, y_pred)
-        print(cm)
         ax = plt.subplot()
         sns.heatmap(cm, annot=True, fmt="g", ax=ax)
         ax.set_xlabel("Predicted labels")

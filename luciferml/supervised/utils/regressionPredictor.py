@@ -219,6 +219,7 @@ def regressionPredictor(
                 print("Training CatBoost Regressor on Training Set [*]\n")
             params["verbose"] = verbose
             regressor = CatBoostRegressor(**params)
+            params.pop("verbose")
             if tune_mode == 1:
                 parameters = parameters_cat
             elif tune_mode == 2:

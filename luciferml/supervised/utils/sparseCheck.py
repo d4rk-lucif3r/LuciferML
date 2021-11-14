@@ -25,4 +25,5 @@ def sparseCheck(features, labels):
     except Exception as error:
         # print('Sparse matrix Check failed with KeyError: ', error)
         pass
+    print("Checking for Sparse Matrix Done [", u"\u2713", "]\n")
     return (features, labels)

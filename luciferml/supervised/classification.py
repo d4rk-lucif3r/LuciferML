@@ -1,12 +1,16 @@
+import copy
 import time
 
 import numpy as np
 import pandas as pd
 from IPython.display import display
-from luciferml.supervised.utils.classificationPredictor import classificationPredictor
-from luciferml.supervised.utils.configs import classifiers
+from luciferml.supervised.utils.best import Best
+from luciferml.supervised.utils.classificationPredictor import \
+    classificationPredictor
+from luciferml.supervised.utils.configs import *
 from luciferml.supervised.utils.confusionMatrix import confusionMatrix
-from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
+from luciferml.supervised.utils.dimensionalityReduction import \
+    dimensionalityReduction
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.intro import intro
@@ -14,7 +18,7 @@ from luciferml.supervised.utils.kfold import kfold
 from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.sparseCheck import sparseCheck
 from sklearn.metrics import accuracy_score
-
+import warnings
 
 class Classification:
     def __init__(
@@ -48,6 +52,7 @@ class Classification:
         k_neighbors=1,
         dropout_rate=0,
         verbose=False,
+        exclude_models = [],
     ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, self.X_val using StandardScaler.
@@ -110,15 +115,15 @@ class Classification:
                     No. of components for LDA. Default = 1
             n_components_pca : int
                     No. of components for PCA. Default = 2
-            self.hidden_layers : int
+            hidden_layers : int
                     No. of default layers of ann. Default = 4
             inputs_units : int
                     No. of units in input layer. Default = 6
             output_units : int
                     No. of units in output layer. Default = 6
-            self.input_activation : str
+            input_activation : str
                     Activation function for Hidden layers. Default = 'relu'
-            self.output_activation : str
+            output_activation : str
                     Activation function for Output layers. Default = 'sigmoid'
             optimizer: str
                     Optimizer for ann. Default = 'adam'
@@ -144,6 +149,8 @@ class Classification:
                 No. of neighbours for SMOTE. Default = 1
             verbose : boolean
                 Verbosity of models. Default = False
+            exclude_models : list
+                List of models to be excluded when using predictor = 'all' . Default = []
 
         Returns:
             Dict Containing Name of Classifiers, Its K-Fold Cross Validated Accuracy and Prediction set
@@ -195,7 +202,8 @@ class Classification:
         self.smote = smote
         self.k_neighbors = k_neighbors
         self.verbose = verbose
-
+        self.exclude_models = exclude_models
+        
         self.accuracy_scores = {}
         self.reg_result = {}
         self.accuracy = 0
@@ -208,8 +216,15 @@ class Classification:
         self.acc = []
         self.bestacc = []
         self.bestparams = []
-        self.result_df = pd.DataFrame(index=classifiers.values())
-
+        self.best_classifier_path = ""
+        self.classifier_model = []
+        self.result_df = pd.DataFrame(index=None)
+        self.classifiers = copy.deepcopy(classifiers)
+        for i in self.exclude_models:
+            self.classifiers.pop(i)
+        self.result_df['Name'] = list(self.classifiers.values())
+        self.best_classifier = "First Run the Predictor in All mode"
+        
         self.pred_mode = ""
 
     def fit(self, features, labels):
@@ -282,15 +297,11 @@ class Classification:
         # Models ---------------------------------------------------------------------
         if self.predictor == "all":
             self.pred_mode = "all"
-            self._fitall()
+            self.__fitall()
             return
 
         elif self.predictor == "ann":
-            (
-                self.parameters,
-                self.classifier,
-                self.classifier_wrap,
-            ) = classificationPredictor(
+            self.parameters, self.classifier, self.classifier_wrap = classificationPredictor(
                 self.predictor,
                 self.params,
                 self.X_train,
@@ -391,134 +402,146 @@ class Classification:
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
 
-    def _fitall(self):
-        print("Training All Classifiers [*]")
-        for index, self.predictor in enumerate(classifiers):
-            if not self.predictor == "ann":
-                self.parameters, self.classifier = classificationPredictor(
-                    self.predictor,
-                    self.params,
-                    self.X_train,
-                    self.X_val,
-                    self.y_train,
-                    self.y_val,
-                    self.epochs,
-                    self.hidden_layers,
-                    self.input_activation,
-                    self.output_activation,
-                    self.loss,
-                    self.batch_size,
-                    self.metrics,
-                    self.validation_split,
-                    self.optimizer,
-                    self.output_units,
-                    self.input_units,
-                    self.tune_mode,
-                    all_mode=True,
-                    verbose=self.verbose,
-                )
-            elif self.predictor == "ann":
-                (
-                    self.parameters,
-                    self.classifier,
-                    self.classifier_wrap,
-                ) = classificationPredictor(
-                    self.predictor,
-                    self.params,
-                    self.X_train,
-                    self.X_val,
-                    self.y_train,
-                    self.y_val,
-                    self.epochs,
-                    self.hidden_layers,
-                    self.input_activation,
-                    self.output_activation,
-                    self.loss,
-                    self.batch_size,
-                    self.metrics,
-                    self.validation_split,
-                    self.optimizer,
-                    self.output_units,
-                    self.input_units,
-                    self.tune_mode,
-                    self.dropout_rate,
-                    all_mode=True,
-                    verbose=self.verbose,
-                )
-            try:
-
+    def __fitall(self):
+        print("Training All Classifiers [*]\n")
+        if self.params != {}:
+            warnings.warn(params_use_warning, UserWarning)
+            self.params = {}
+        for _, self.predictor in enumerate(self.classifiers):
+            if not self.predictor in self.exclude_models:
                 if not self.predictor == "ann":
-                    self.classifier.fit(self.X_train, self.y_train)
-            except Exception as error:
-                print(
-                    classifiers[self.predictor],
-                    "Model Train Failed with error: ",
-                    error,
-                    "\n",
-                )
-            try:
-                self.y_pred = self.classifier.predict(self.X_val)
-            except Exception as error:
-                print(
-                    classifiers[self.predictor],
-                    "Data Prediction Failed with error: ",
-                    error,
-                    "\n",
-                )
-            if self.predictor == "ann":
-                self.y_pred = (self.y_pred > 0.5).astype("int32")
+                    self.parameters, self.classifier = classificationPredictor(
+                        self.predictor,
+                        self.params,
+                        self.X_train,
+                        self.X_val,
+                        self.y_train,
+                        self.y_val,
+                        self.epochs,
+                        self.hidden_layers,
+                        self.input_activation,
+                        self.output_activation,
+                        self.loss,
+                        self.batch_size,
+                        self.metrics,
+                        self.validation_split,
+                        self.optimizer,
+                        self.output_units,
+                        self.input_units,
+                        self.tune_mode,
+                        all_mode=True,
+                        verbose=self.verbose,
+                    )
+                elif self.predictor == "ann":
+                    (
+                        self.parameters,
+                        self.classifier,
+                        self.classifier_wrap,
+                    ) = classificationPredictor(
+                        self.predictor,
+                        self.params,
+                        self.X_train,
+                        self.X_val,
+                        self.y_train,
+                        self.y_val,
+                        self.epochs,
+                        self.hidden_layers,
+                        self.input_activation,
+                        self.output_activation,
+                        self.loss,
+                        self.batch_size,
+                        self.metrics,
+                        self.validation_split,
+                        self.optimizer,
+                        self.output_units,
+                        self.input_units,
+                        self.tune_mode,
+                        self.dropout_rate,
+                        all_mode=True,
+                        verbose=self.verbose,
+                    )
+                try:
 
-            # Accuracy ---------------------------------------------------------------------
-            try:
-                self.accuracy = accuracy_score(self.y_val, self.y_pred)
-                self.acc.append(self.accuracy * 100)
-            except Exception as error:
-                print(
-                    classifiers[self.predictor],
-                    "Evaluation Failed with error: ",
-                    error,
-                    "\n",
-                )
+                    if not self.predictor == "ann":
+                        self.classifier.fit(self.X_train, self.y_train)
+                except Exception as error:
+                    print(
+                        classifiers[self.predictor],
+                        "Model Train Failed with error: ",
+                        error,
+                        "\n",
+                    )
+                try:
+                    self.y_pred = self.classifier.predict(self.X_val)
+                except Exception as error:
+                    print(
+                        classifiers[self.predictor],
+                        "Data Prediction Failed with error: ",
+                        error,
+                        "\n",
+                    )
+                if self.predictor == "ann":
+                    self.y_pred = (self.y_pred > 0.5).astype("int32")
 
-            # K-Fold ---------------------------------------------------------------------
-            if self.predictor == "ann":
-                self.classifier_name, self.kfold_accuracy = kfold(
-                    self.classifier_wrap,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                )
-            else:
-                self.classifier_name, self.kfold_accuracy = kfold(
-                    self.classifier,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                )
-            self.kfoldacc.append(self.kfold_accuracy)
-            # GridSearch ---------------------------------------------------------------------
-            if not self.predictor == "nb" and self.tune:
-                self.__tuner(all_mode=True)
-            if self.predictor == "nb":
-                self.best_params = ""
-                self.best_accuracy = self.kfold_accuracy
+                # Accuracy ---------------------------------------------------------------------
+                try:
+                    self.accuracy = accuracy_score(self.y_val, self.y_pred)
+                    self.acc.append(self.accuracy * 100)
+                except Exception as error:
+                    print(
+                        classifiers[self.predictor],
+                        "Evaluation Failed with error: ",
+                        error,
+                        "\n",
+                    )
+
+                # K-Fold ---------------------------------------------------------------------
+                if self.predictor == "ann":
+                    self.classifier_name, self.kfold_accuracy = kfold(
+                        self.classifier_wrap,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                    )
+                else:
+                    self.classifier_name, self.kfold_accuracy = kfold(
+                        self.classifier,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                    )
+                self.kfoldacc.append(self.kfold_accuracy)
+                self.classifier_model.append(self.classifier)
+                # GridSearch ---------------------------------------------------------------------
+                if not self.predictor == "nb" and self.tune:
+                    self.__tuner(all_mode=True)
+                if self.predictor == "nb":
+                    self.best_params = ""
+                    self.best_accuracy = self.kfold_accuracy
         self.result_df["Accuracy"] = self.acc
         self.result_df["KFold Accuracy"] = self.kfoldacc
+        self.result_df["Model"] = self.classifier_model
         if self.tune:
             self.result_df["Best Parameters"] = self.bestparams
             self.result_df["Best Accuracy"] = self.bestacc
 
-        display(self.result_df)
+        self.best_classifier = Best(self.result_df.loc[
+            self.result_df["KFold Accuracy"].idxmax()
+        ], self.tune)
+        self.best_classifier_path = self.best_classifier.save_model()[0]
+        print("Training All Classifiers Done [", u"\u2713", "]\n")
+        print("Saved Best Model to : ", self.best_classifier_path, "\n")
+        display(self.result_df.iloc[:, :-1])
         print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
         return
 
-    def _tuner(self, all_mode=False):
+    def __tuner(self, all_mode=False):
         if not all_mode:
             print(
                 "Applying Grid Search Cross validation on Mode {} [*]".format(

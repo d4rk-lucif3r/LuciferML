@@ -1,10 +1,14 @@
+import copy
 import time
 
 import numpy as np
 import pandas as pd
+
 from IPython.display import display
-from luciferml.supervised.utils.configs import regressors
-from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
+from luciferml.supervised.utils.best import Best
+from luciferml.supervised.utils.configs import *
+from luciferml.supervised.utils.dimensionalityReduction import \
+    dimensionalityReduction
 from luciferml.supervised.utils.encoder import encoder
 from luciferml.supervised.utils.hyperTune import hyperTune
 from luciferml.supervised.utils.intro import intro
@@ -13,7 +17,7 @@ from luciferml.supervised.utils.predPreprocess import pred_preprocess
 from luciferml.supervised.utils.regressionPredictor import regressionPredictor
 from luciferml.supervised.utils.sparseCheck import sparseCheck
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+import warnings
 
 class Regression:
     def __init__(
@@ -43,6 +47,7 @@ class Regression:
         k_neighbors=1,
         dropout_rate=0,
         verbose=False,
+        exclude_models = [],
     ):
         """
         Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -112,7 +117,7 @@ class Regression:
                     No. of units in input layer. Default = 6
             output_units : int
                     No. of units in output layer. Default = 6
-            self.input_activation : str
+            input_activation : str
                     Activation function for Hidden layers. Default = 'relu'
             optimizer: str
                     Optimizer for ann. Default = 'adam'
@@ -138,6 +143,8 @@ class Regression:
                 No. of neighbours for SMOTE. Default = 1
             verbose : boolean
                 Verbosity of models. Default = False
+            exclude_models : list
+                List of models to be excluded when using predictor = 'all' . Default = []
         Returns:
 
             Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
@@ -188,6 +195,7 @@ class Regression:
         self.smote = smote
         self.k_neighbors = k_neighbors
         self.verbose = verbose
+        self.exclude_models = exclude_models
 
         self.accuracy_scores = {}
         self.reg_result = {}
@@ -204,8 +212,15 @@ class Regression:
         self.rmse = []
         self.bestacc = []
         self.bestparams = []
-        self.result_df = pd.DataFrame(index=regressors.values())
-
+        self.regressor_model = []
+        self.best_regressor_path = ""
+        self.result_df = pd.DataFrame(index=None)
+        self.regressors = copy.deepcopy(regressors)
+        for i in self.exclude_models:
+            self.regressors.pop(i)
+        self.result_df['Name'] = list(self.regressors.values())
+        self.best_regressor = "First Run the Predictor in All mode"
+        
         self.pred_mode = ""
 
     def fit(self, features, labels):
@@ -280,7 +295,7 @@ class Regression:
         # Models ---------------------------------------------------------------------
         if self.predictor == "all":
             self.pred_mode = "all"
-            self._fitall()
+            self.__fitall()
             return
         if self.predictor == "ann":
             self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
@@ -384,140 +399,152 @@ class Regression:
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
 
-    def _fitall(self):
-        print("Training All Regressors [*]")
-        for index, self.predictor in enumerate(regressors):
-            if not self.predictor == "ann":
-                self.parameters, self.regressor = regressionPredictor(
-                    self.predictor,
-                    self.params,
-                    self.X_train,
-                    self.X_val,
-                    self.y_train,
-                    self.y_val,
-                    self.epochs,
-                    self.hidden_layers,
-                    self.input_activation,
-                    self.loss,
-                    self.batch_size,
-                    self.validation_split,
-                    self.optimizer,
-                    self.output_units,
-                    self.input_units,
-                    self.tune_mode,
-                    all_mode=True,
-                    verbose=self.verbose,
-                )
-            elif self.predictor == "ann":
-                (
-                    self.parameters,
-                    self.regressor,
-                    self.regressor_wrap,
-                ) = regressionPredictor(
-                    self.predictor,
-                    self.params,
-                    self.X_train,
-                    self.X_val,
-                    self.y_train,
-                    self.y_val,
-                    self.epochs,
-                    self.hidden_layers,
-                    self.input_activation,
-                    self.loss,
-                    self.batch_size,
-                    self.validation_split,
-                    self.optimizer,
-                    self.output_units,
-                    self.input_units,
-                    self.tune_mode,
-                    self.dropout_rate,
-                    all_mode=True,
-                    verbose=self.verbose,
-                )
-            try:
-
+    def __fitall(self):
+        print("Training All Regressors [*]\n")
+        if self.params != {}:
+            warnings.warn(params_use_warning, UserWarning)
+            self.params = {}
+        for _, self.predictor in enumerate(self.regressors):
+            if not self.predictor in self.exclude_models:
                 if not self.predictor == "ann":
-                    self.regressor.fit(self.X_train, self.y_train)
-            except Exception as error:
-                print(
-                    regressors[self.predictor],
-                    "Model Train Failed with error: ",
-                    error,
-                    "\n",
-                )
-            try:
-                self.y_pred = self.regressor.predict(self.X_val)
-            except Exception as error:
-                print(
-                    regressors[self.predictor],
-                    "Data Prediction Failed with error: ",
-                    error,
-                    "\n",
-                )
-            if self.predictor == "ann":
-                self.y_pred = (self.y_pred > 0.5).astype("int32")
+                    self.parameters, self.regressor = regressionPredictor(
+                        self.predictor,
+                        self.params,
+                        self.X_train,
+                        self.X_val,
+                        self.y_train,
+                        self.y_val,
+                        self.epochs,
+                        self.hidden_layers,
+                        self.input_activation,
+                        self.loss,
+                        self.batch_size,
+                        self.validation_split,
+                        self.optimizer,
+                        self.output_units,
+                        self.input_units,
+                        self.tune_mode,
+                        all_mode=True,
+                        verbose=self.verbose,
+                    )
+                elif self.predictor == "ann":
+                    (
+                        self.parameters,
+                        self.regressor,
+                        self.regressor_wrap,
+                    ) = regressionPredictor(
+                        self.predictor,
+                        self.params,
+                        self.X_train,
+                        self.X_val,
+                        self.y_train,
+                        self.y_val,
+                        self.epochs,
+                        self.hidden_layers,
+                        self.input_activation,
+                        self.loss,
+                        self.batch_size,
+                        self.validation_split,
+                        self.optimizer,
+                        self.output_units,
+                        self.input_units,
+                        self.tune_mode,
+                        self.dropout_rate,
+                        all_mode=True,
+                        verbose=self.verbose,
+                    )
+                try:
 
-            # Accuracy ---------------------------------------------------------------------
-            try:
-                self.accuracy = r2_score(self.y_val, self.y_pred)
-                self.m_absolute_error = mean_absolute_error(self.y_val, self.y_pred)
-                self.rm_squared_error = mean_squared_error(
-                    self.y_val, self.y_pred, squared=False
-                )
-                self.acc.append(self.accuracy * 100)
-                self.rmse.append(self.rm_squared_error)
-                self.mae.append(self.m_absolute_error)
-            except Exception as error:
-                print(
-                    regressors[self.predictor],
-                    "Evaluation Failed with error: ",
-                    error,
-                    "\n",
-                )
+                    if not self.predictor == "ann":
+                        self.regressor.fit(self.X_train, self.y_train)
+                except Exception as error:
+                    print(
+                        regressors[self.predictor],
+                        "Model Train Failed with error: ",
+                        error,
+                        "\n",
+                    )
+                try:
+                    self.y_pred = self.regressor.predict(self.X_val)
+                except Exception as error:
+                    print(
+                        regressors[self.predictor],
+                        "Data Prediction Failed with error: ",
+                        error,
+                        "\n",
+                    )
+                if self.predictor == "ann":
+                    self.y_pred = (self.y_pred > 0.5).astype("int32")
 
-            # K-Fold ---------------------------------------------------------------------
-            if self.predictor == "ann":
-                self.regressor_name, self.kfold_accuracy = kfold(
-                    self.regressor_wrap,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                    isReg=True,
-                )
-            else:
-                self.regressor_name, self.kfold_accuracy = kfold(
-                    self.regressor,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                    isReg=True,
-                )
-            self.kfoldacc.append(self.kfold_accuracy)
-            # GridSearch ---------------------------------------------------------------------
-            if not self.predictor == "nb" and self.tune:
-                self.__tuner(all_mode=True)
-            if self.predictor == "nb":
-                self.best_params = ""
-                self.best_accuracy = self.kfold_accuracy
+                # Accuracy ---------------------------------------------------------------------
+                try:
+                    self.accuracy = r2_score(self.y_val, self.y_pred)
+                    self.m_absolute_error = mean_absolute_error(self.y_val, self.y_pred)
+                    self.rm_squared_error = mean_squared_error(
+                        self.y_val, self.y_pred, squared=False
+                    )
+                    self.acc.append(self.accuracy * 100)
+                    self.rmse.append(self.rm_squared_error)
+                    self.mae.append(self.m_absolute_error)
+                except Exception as error:
+                    print(
+                        regressors[self.predictor],
+                        "Evaluation Failed with error: ",
+                        error,
+                        "\n",
+                    )
+
+                # K-Fold ---------------------------------------------------------------------
+                if self.predictor == "ann":
+                    self.regressor_name, self.kfold_accuracy = kfold(
+                        self.regressor_wrap,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                        isReg=True,
+                    )
+                else:
+                    self.regressor_name, self.kfold_accuracy = kfold(
+                        self.regressor,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                        isReg=True,
+                    )
+                self.kfoldacc.append(self.kfold_accuracy)
+                self.regressor_model.append(self.regressor)
+                # GridSearch ---------------------------------------------------------------------
+                if not self.predictor == "nb" and self.tune:
+                    self.__tuner(all_mode=True)
+                if self.predictor == "nb":
+                    self.best_params = ""
+                    self.best_accuracy = self.kfold_accuracy
         self.result_df["R2 Score"] = self.acc
         self.result_df["Mean Absolute Error"] = self.mae
         self.result_df["Root Mean Squared Error"] = self.rmse
         self.result_df["KFold Accuracy"] = self.kfoldacc
+        self.result_df["Model"] = self.regressor_model
         if self.tune:
             self.result_df["Best Parameters"] = self.bestparams
             self.result_df["Best Accuracy"] = self.bestacc
 
-        display(self.result_df)
+        self.best_regressor = Best(self.result_df.loc[
+                self.result_df["KFold Accuracy"].idxmax()
+            ], self.tune, isReg = True)
+        self.best_regressor_path = self.best_regressor.save_model()[0]
+        print("Training All Regressors Done [", u"\u2713", "]\n")
+        print("Saved Best Model to : ", self.best_regressor_path, "\n")
+        display(self.result_df.iloc[:, :-1])
         print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
         return
 
-    def _tuner(self, all_mode=False):
+    def __tuner(self, all_mode=False):
         if not all_mode:
             print(
                 "Applying Grid Search Cross validation on Mode {} [*]".format(
@@ -597,3 +624,4 @@ class Regression:
         if self.pred_mode == "all":
             print("[Error] This method is only applicable on single predictor")
             return
+

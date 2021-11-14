@@ -396,7 +396,7 @@ parameters_lin = [{"fit_intercept": [True, False], "positive": [True, False]}]
 parameters_sgd_1 = [
     {
         "penalty": ["l1", "l2"],
-        "loss": ["squared_loss", "huber"],
+        "loss": ["squared_error", "huber"],
         "alpha": [0.1, 0.5, 0.9, 1],
         "learning_rate": ["constant", "optimal"],
     }
@@ -408,7 +408,7 @@ parameters_sgd_2 = [
             "l2",
             "elasticnet",
         ],
-        "loss": ["squared_loss", "huber", "epsilon_insensitive"],
+        "loss": ["squared_error", "huber", "epsilon_insensitive"],
         "alpha": [1e-4, 0.1, 0.3, 0.5, 0.7, 0.9, 1],
         "fit_intercept": [True, False],
         "learning_rate": ["constant", "optimal", "invscaling"],
@@ -419,7 +419,7 @@ parameters_sgd_3 = [
     {
         "penalty": ["l1", "l2", "elasticnet"],
         "loss": [
-            "squared_loss",
+            "squared_error",
             "huber",
             "epsilon_insensitive",
             "squared_epsilon_insensitive",
