@@ -9,6 +9,7 @@ and stores its accuracies in a dictionary containing Model name as Key and accur
 Applies GridSearch Cross Validation and gives best params out from param list.
 
 Parameters:
+
         features : array
                         features array
 
