@@ -96,6 +96,9 @@ Parameters:
                 Verbosity of models. Default = False
         exclude_models : list
                 List of models to be excluded when using predictor = 'all' . Default = []
+        path : list
+                List containing path to saved model and scaler. Default = None
+                Example: [model.pkl, scaler.pkl]
 
 Returns:
 

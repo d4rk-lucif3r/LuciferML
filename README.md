@@ -122,6 +122,26 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Regression.md)
 
+## Persistence
+
+LuciferML's model can be saved as a pickle file. It will save both the model and the scaler to the pickle file.
+
+    1) Saving
+
+        Ex: 
+            regressor.save([model.pkl, scaler.pkl])
+
+    2) Loading
+
+        Ex: 
+            regressor = Regression(path = [model.pkl, scaler.pkl])
+
+These are applicable for both Classification and Regression.
+
+## Examples
+
+Please refer to more examples [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/examples/example.ipynb)
+
 ---
 
 ## [To-Do's](https://github.com/d4rk-lucif3r/LuciferML/issues/10)
