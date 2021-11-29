@@ -126,12 +126,15 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
 LuciferML's model can be saved as a pickle file. It will save both the model and the scaler to the pickle file.
 
-    1) Saving
+
+    - Saving
 
         Ex: 
             regressor.save([model.pkl, scaler.pkl])
 
-    2) Loading
+A new LuciferML Object can be loaded as well by specifying path of model and scaler
+
+    - Loading
 
         Ex: 
             regressor = Regression(path = [model.pkl, scaler.pkl])
