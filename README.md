@@ -130,14 +130,14 @@ LuciferML's model can be saved as a pickle file. It will save both the model and
     - Saving
 
         Ex: 
-            regressor.save([model.pkl, scaler.pkl])
+            regressor.save([<path-to-model.pkl>, <path-to-scaler.pkl>])
 
 A new LuciferML Object can be loaded as well by specifying path of model and scaler
 
     - Loading
 
         Ex: 
-            regressor = Regression(path = [model.pkl, scaler.pkl])
+            regressor = Regression(path = [<path-to-model.pkl>, <path-to-scaler.pkl>])
 
 These are applicable for both Classification and Regression.
 
