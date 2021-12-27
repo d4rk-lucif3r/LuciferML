@@ -1,24 +1,20 @@
 import copy
 import os
-from re import A
 import time
-from typing import Type
 import warnings
+from pickle import dump, load
 
 import numpy as np
+import optuna
 import pandas as pd
 from IPython.display import display
-from pickle import dump, load
 from luciferml.supervised.utils.best import Best
 from luciferml.supervised.utils.configs import *
-from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
-from luciferml.supervised.utils.encoder import encoder
-from luciferml.supervised.utils.hyperTune import hyperTune
-from luciferml.supervised.utils.intro import intro
-from luciferml.supervised.utils.kfold import kfold
-from luciferml.supervised.utils.predPreprocess import pred_preprocess
-from luciferml.supervised.utils.regressionPredictor import regressionPredictor
-from luciferml.supervised.utils.sparseCheck import sparseCheck
+from luciferml.supervised.utils.preprocesser import PreProcesser
+from luciferml.supervised.utils.predictors import regression_predictor
+from luciferml.supervised.utils.tuner.luciferml_tuner import luciferml_tuner
+from luciferml.supervised.utils.validator import *
+from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -36,22 +32,17 @@ class Regression:
         lda="n",
         pca="n",
         n_components_pca=2,
-        hidden_layers=4,
-        output_units=1,
-        input_units=6,
-        input_activation="relu",
-        optimizer="adam",
         loss="mean_squared_error",
         validation_split=0.20,
-        epochs=100,
-        batch_size=32,
-        tune_mode=1,
         smote="n",
         k_neighbors=1,
-        dropout_rate=0,
         verbose=False,
         exclude_models=[],
         path=None,
+        optuna_sampler=TPESampler(),
+        optuna_direction="maximize",
+        optuna_n_trials=100,
+        optuna_metric="r2",
     ):
         """
         Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -61,14 +52,11 @@ class Regression:
         and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
         Applies GridSearch Cross Validation and gives best params out from param list.
 
-
         Parameters:
             features : array
                         features array
-
             lables : array
                         labels array
-
             predictor : str
                     Predicting model to be used
                     Default 'lin'
@@ -89,20 +77,18 @@ class Regression:
                                 lgbm - LightGB Regressor
                                 xgb  - XGBoost Regressor
                                 cat  - Catboost Regressor
-                                ann  - Artificial Neural Network
+                                ann  - Multi Layer Perceptron Regressor
                                 all  - Applies all above regressors
             params : dict
                         contains parameters for model
             tune : boolean
                     when True Applies GridSearch CrossValidation
                     Default is False
-
             test_size: float or int, default=.2
                         If float, should be between 0.0 and 1.0 and represent
                         the proportion of the dataset to include in
                         the test split.
                         If int, represents the absolute number of test samples.
-
             cv_folds : int
                     No. of cross validation folds. Default = 10
             pca : str
@@ -115,32 +101,8 @@ class Regression:
                     No. of components for LDA. Default = 1
             n_components_pca : int
                     No. of components for PCA. Default = 2
-            hidden_layers : int
-                    No. of default layers of ann. Default = 4
-            inputs_units : int
-                    No. of units in input layer. Default = 6
-            output_units : int
-                    No. of units in output layer. Default = 6
-            input_activation : str
-                    Activation function for Hidden layers. Default = 'relu'
-            optimizer: str
-                    Optimizer for ann. Default = 'adam'
             loss : str
                     loss method for ann. Default = 'mean_squared_error'
-            validation_split : float or int
-                    Percentage of validation set splitting in ann. Default = .20
-            epochs : int
-                    No. of epochs for ann. Default = 100
-            dropout_rate : int or float
-                    rate for dropout layer. Default = 0
-            batch_size :
-                    Batch Size for ANN. Default = 32
-            tune_mode : int
-                    HyperParam tune modes. Default = 1
-                        Available Modes:
-                            1 : Basic Tune
-                            2 : Intermediate Tune
-                            3 : Extreme Tune (Can Take Much Time)
             smote : str,
                 Whether to apply SMOTE. Default = 'y'
             k_neighbors : int
@@ -152,6 +114,19 @@ class Regression:
             path : list
                 List containing path to saved model and scaler. Default = None
                 Example: [model.pkl, scaler.pkl]
+            random_state : int
+                Random random_state for reproducibility. Default = 42
+            optuna_sampler : Function
+                Sampler to be used in optuna. Default = TPESampler()
+            optuna_direction : str
+                Direction of optimization. Default = 'maximize'
+                Available Directions:
+                    maximize : Maximize
+                    minimize : Minimize
+            optuna_n_trials : int
+                No. of trials for optuna. Default = 100
+            optuna_metric: str
+                Metric to be used in optuna. Default = 'r2'
         Returns:
 
             Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
@@ -175,7 +150,11 @@ class Regression:
             result = regressor.result()
 
         """
+        self.preprocess = PreProcesser()
         self.predictor = predictor
+        if not pred_check(predictor, type="regression"):
+            raise ValueError(unsupported_pred_warning)
+        self.original_predictor = predictor
         self.params = params
         self.tune = tune
         self.test_size = test_size
@@ -186,22 +165,17 @@ class Regression:
         self.lda = lda
         self.pca = pca
         self.n_components_pca = n_components_pca
-        self.hidden_layers = hidden_layers
-        self.output_units = output_units
-        self.input_units = input_units
-        self.input_activation = input_activation
-        self.optimizer = optimizer
         self.loss = loss
         self.validation_split = validation_split
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.dropout_rate = dropout_rate
-        self.tune_mode = tune_mode
         self.rerun = False
         self.smote = smote
         self.k_neighbors = k_neighbors
         self.verbose = verbose
         self.exclude_models = exclude_models
+        self.sampler = optuna_sampler
+        self.direction = optuna_direction
+        self.n_trials = optuna_n_trials
+        self.metric = optuna_metric
 
         self.accuracy_scores = {}
         self.reg_result = {}
@@ -219,6 +193,7 @@ class Regression:
         self.bestacc = []
         self.bestparams = []
         self.regressor_model = []
+        self.tuned_trained_model = []
         self.best_regressor_path = ""
         self.scaler_path = ""
         self.result_df = pd.DataFrame(index=None)
@@ -227,7 +202,7 @@ class Regression:
             self.regressors.pop(i)
         self.result_df["Name"] = list(self.regressors.values())
         self.best_regressor = "First Run the Predictor in All mode"
-
+        self.objective = None
         self.pred_mode = ""
 
         if path != None:
@@ -236,6 +211,8 @@ class Regression:
             except Exception as e:
                 print(e)
                 print("Model not found")
+        if not self.verbose:
+            optuna.logging.set_verbosity(optuna.logging.WARNING)
 
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -246,6 +223,7 @@ class Regression:
         Applies GridSearch Cross Validation and gives best params out from param list.]
 
         Args:
+
             features ([Pandas DataFrame]): [DataFrame containing Features]
             labels ([Pandas DataFrame]): [DataFrame containing Labels]
         """
@@ -256,7 +234,7 @@ class Regression:
         # Time Function ---------------------------------------------------------------------
 
         self.start = time.time()
-        intro()
+        print(intro, "\n")
         print("Started Lucifer-ML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
@@ -272,10 +250,12 @@ class Regression:
 
             # Encoding ---------------------------------------------------------------------
 
-            self.features, self.labels = encoder(self.features, self.labels)
+            self.features, self.labels = self.preprocess.encoder(
+                self.features, self.labels
+            )
 
             # Sparse Check -------------------------------------------------------------
-            self.features, self.labels = sparseCheck(self.features, self.labels)
+            self.features, self.labels = sparse_check(self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
             (
@@ -284,7 +264,7 @@ class Regression:
                 self.y_train,
                 self.y_val,
                 self.sc,
-            ) = pred_preprocess(
+            ) = self.preprocess.data_preprocess(
                 self.features,
                 self.labels,
                 self.test_size,
@@ -294,7 +274,7 @@ class Regression:
             )
 
             # Dimensionality Reduction---------------------------------------------------------------------
-            self.X_train, self.X_val = dimensionalityReduction(
+            self.X_train, self.X_val = self.preprocess.dimensionality_reduction(
                 self.lda,
                 self.pca,
                 self.X_train,
@@ -307,56 +287,23 @@ class Regression:
             )
 
         # Models ---------------------------------------------------------------------
-        if self.predictor == "all":
+        if self.original_predictor == "all":
             self.pred_mode = "all"
             self.__fitall()
             return
-        if self.predictor == "ann":
-            self.parameters, self.regressor, self.regressor_wrap = regressionPredictor(
-                self.predictor,
-                self.params,
-                self.X_train,
-                self.X_val,
-                self.y_train,
-                self.y_val,
-                self.epochs,
-                self.hidden_layers,
-                self.input_activation,
-                self.loss,
-                self.batch_size,
-                self.validation_split,
-                self.optimizer,
-                self.output_units,
-                self.input_units,
-                self.tune_mode,
-                self.dropout_rate,
-                verbose=self.verbose,
-            )
-        else:
-            self.parameters, self.regressor = regressionPredictor(
-                self.predictor,
-                self.params,
-                self.X_train,
-                self.X_val,
-                self.y_train,
-                self.y_val,
-                self.epochs,
-                self.hidden_layers,
-                self.input_activation,
-                self.loss,
-                self.batch_size,
-                self.validation_split,
-                self.optimizer,
-                self.output_units,
-                self.input_units,
-                self.tune_mode,
-                verbose=self.verbose,
-            )
+        self.regressor, self.objective = regression_predictor(
+            self.predictor,
+            self.params,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+            self.random_state,
+            self.metric,
+            verbose=self.verbose,
+        )
 
         try:
-
-            if not self.predictor == "ann":
-                self.regressor.fit(self.X_train, self.y_train)
+            self.regressor.fit(self.X_train, self.y_train)
         except Exception as error:
             print("Model Train Failed with error: ", error, "\n")
 
@@ -386,24 +333,14 @@ class Regression:
             print("Model Evaluation Failed with error: ", error, "\n")
 
         # K-Fold ---------------------------------------------------------------------
-        if self.predictor == "ann":
-            self.regressor_name, self.kfold_accuracy = kfold(
-                self.regressor_wrap,
-                self.predictor,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                isReg=True,
-            )
-        else:
-            self.regressor_name, self.kfold_accuracy = kfold(
-                self.regressor,
-                self.predictor,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                isReg=True,
-            )
+        self.regressor_name, self.kfold_accuracy = kfold(
+            self.regressor,
+            self.predictor,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+            isReg=True,
+        )
 
         # GridSearch ---------------------------------------------------------------------
         if not self.predictor == "nb" and self.tune:
@@ -420,57 +357,19 @@ class Regression:
             self.params = {}
         for _, self.predictor in enumerate(self.regressors):
             if not self.predictor in self.exclude_models:
-                if not self.predictor == "ann":
-                    self.parameters, self.regressor = regressionPredictor(
-                        self.predictor,
-                        self.params,
-                        self.X_train,
-                        self.X_val,
-                        self.y_train,
-                        self.y_val,
-                        self.epochs,
-                        self.hidden_layers,
-                        self.input_activation,
-                        self.loss,
-                        self.batch_size,
-                        self.validation_split,
-                        self.optimizer,
-                        self.output_units,
-                        self.input_units,
-                        self.tune_mode,
-                        all_mode=True,
-                        verbose=self.verbose,
-                    )
-                elif self.predictor == "ann":
-                    (
-                        self.parameters,
-                        self.regressor,
-                        self.regressor_wrap,
-                    ) = regressionPredictor(
-                        self.predictor,
-                        self.params,
-                        self.X_train,
-                        self.X_val,
-                        self.y_train,
-                        self.y_val,
-                        self.epochs,
-                        self.hidden_layers,
-                        self.input_activation,
-                        self.loss,
-                        self.batch_size,
-                        self.validation_split,
-                        self.optimizer,
-                        self.output_units,
-                        self.input_units,
-                        self.tune_mode,
-                        self.dropout_rate,
-                        all_mode=True,
-                        verbose=self.verbose,
-                    )
+                (self.regressor, self.objective,) = regression_predictor(
+                    self.predictor,
+                    self.params,
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    self.random_state,
+                    self.metric,
+                    all_mode=True,
+                    verbose=self.verbose,
+                )
                 try:
-
-                    if not self.predictor == "ann":
-                        self.regressor.fit(self.X_train, self.y_train)
+                    self.regressor.fit(self.X_train, self.y_train)
                 except Exception as error:
                     print(
                         regressors[self.predictor],
@@ -487,9 +386,6 @@ class Regression:
                         error,
                         "\n",
                     )
-                if self.predictor == "ann":
-                    self.y_pred = (self.y_pred > 0.5).astype("int32")
-
                 # Accuracy ---------------------------------------------------------------------
                 try:
                     self.accuracy = r2_score(self.y_val, self.y_pred)
@@ -509,26 +405,15 @@ class Regression:
                     )
 
                 # K-Fold ---------------------------------------------------------------------
-                if self.predictor == "ann":
-                    self.regressor_name, self.kfold_accuracy = kfold(
-                        self.regressor_wrap,
-                        self.predictor,
-                        self.X_train,
-                        self.y_train,
-                        self.cv_folds,
-                        all_mode=True,
-                        isReg=True,
-                    )
-                else:
-                    self.regressor_name, self.kfold_accuracy = kfold(
-                        self.regressor,
-                        self.predictor,
-                        self.X_train,
-                        self.y_train,
-                        self.cv_folds,
-                        all_mode=True,
-                        isReg=True,
-                    )
+                self.regressor_name, self.kfold_accuracy = kfold(
+                    self.regressor,
+                    self.predictor,
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    all_mode=True,
+                    isReg=True,
+                )
                 self.kfoldacc.append(self.kfold_accuracy)
                 self.regressor_model.append(self.regressor)
                 # GridSearch ---------------------------------------------------------------------
@@ -542,15 +427,22 @@ class Regression:
         self.result_df["Root Mean Squared Error"] = self.rmse
         self.result_df["KFold Accuracy"] = self.kfoldacc
         self.result_df["Model"] = self.regressor_model
-        if self.tune:
+
+        if self.tune == True:
             self.result_df["Best Parameters"] = self.bestparams
             self.result_df["Best Accuracy"] = self.bestacc
-
-        self.best_regressor = Best(
-            self.result_df.loc[self.result_df["KFold Accuracy"].idxmax()],
-            self.tune,
-            isReg=True,
-        )
+            self.result_df["Trained Model"] = self.tuned_trained_model
+            self.best_regressor = Best(
+                self.result_df.loc[self.result_df["Best Accuracy"].idxmax()],
+                self.tune,
+                isReg=True,
+            )
+        else:
+            self.best_regressor = Best(
+                self.result_df.loc[self.result_df["KFold Accuracy"].idxmax()],
+                self.tune,
+                isReg=True,
+            )
         self.best_regressor_path, self.scaler_path = self.save(
             best=True, model=self.best_regressor.model, scaler=self.sc
         )
@@ -561,7 +453,7 @@ class Regression:
             ),
             "\n",
         )
-        display(self.result_df.iloc[:, :-1])
+        display(self.result_df)
         print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
@@ -569,40 +461,32 @@ class Regression:
 
     def __tuner(self, all_mode=False):
         if not all_mode:
-            print(
-                "Applying Grid Search Cross validation on Mode {} [*]".format(
-                    self.tune_mode
-                )
-            )
-        if self.predictor == "ann":
-            self.best_params, self.best_accuracy = hyperTune(
-                self.regressor_wrap,
-                self.parameters,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                self.tune_mode,
-                all_mode=all_mode,
-                isReg=True,
-            )
-        else:
-            self.best_params, self.best_accuracy = hyperTune(
-                self.regressor,
-                self.parameters,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                self.tune_mode,
-                all_mode=all_mode,
-                isReg=True,
-            )
+            print("HyperParam Tuning Started [*]\n")
+        self.best_params, self.best_accuracy, self.best_trained_model = luciferml_tuner(
+            self.predictor,
+            self.objective,
+            self.n_trials,
+            self.sampler,
+            self.direction,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+            self.random_state,
+            self.metric,
+            all_mode=all_mode,
+            isReg=True,
+        )
         self.bestparams.append(self.best_params)
         self.bestacc.append(self.best_accuracy * 100)
+        self.tuned_trained_model.append(self.best_trained_model)
+        if not all_mode:
+            print("HyperParam Tuning Done [", u"\u2713", "]\n")
 
     def result(self):
         """[Makes a dictionary containing Regressor Name, K-Fold CV Accuracy, RMSE, Prediction set.]
 
         Returns:
+
             [dict]: [Dictionary containing :
                         - "Regressor" - Regressor Name
                         - "Accuracy" - KFold CV Accuracy
@@ -648,66 +532,65 @@ class Regression:
         Saves the model and its scaler to a file provided with a path.
         If no path is provided will create a directory named
         lucifer_ml_info/models/ and lucifer_ml_info/scaler/ in current working directory
+
         Args:
+
             path ([list]): [List containing path to save the model and scaler.]
                 Example: path = ["model.pkl", "scaler.pkl"]
 
         Returns:
+
             Path to the saved model and its scaler.
         """
         if not type(path) == list and path != None:
             raise TypeError("Path must be a list")
-        if not self.predictor == "all":
-            dir_path_model = path[0] if path else "lucifer_ml_info/models/regression/"
-            dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/regression/"
-            if kwargs.get("best"):
-                dir_path_model = "lucifer_ml_info/best/regression/models/"
-                dir_path_scaler = "lucifer_ml_info/best/regression/scalers/"
-            os.makedirs(dir_path_model, exist_ok=True)
-            os.makedirs(dir_path_scaler, exist_ok=True)
-            timestamp = str(int(time.time()))
-            path_model = (
-                dir_path_model
-                + regressors[self.predictor].replace(" ", "_")
-                + "_"
-                + timestamp
-                + ".pkl"
-            )
-            path_scaler = (
-                dir_path_scaler
-                + regressors[self.predictor].replace(" ", "_")
-                + "_"
-                + "Scaler"
-                + "_"
-                + timestamp
-                + ".pkl"
-            )
-            if (
-                not kwargs.get("model")
-                and not kwargs.get("best")
-                and not kwargs.get("scaler")
-            ):
-                dump(self.regressor, open(path_model, "wb"))
-                dump(self.sc, open(path_scaler, "wb"))
-            else:
-                dump(kwargs.get("model"), open(path_model, "wb"))
-                dump(kwargs.get("scaler"), open(path_scaler, "wb"))
-            if not kwargs.get("best"):
-                print(
-                    "Model Saved at {} and Scaler at {}".format(path_model, path_scaler)
-                )
-            return path_model, path_scaler
+        dir_path_model = path[0] if path else "lucifer_ml_info/models/regression/"
+        dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/regression/"
+        if kwargs.get("best"):
+            dir_path_model = "lucifer_ml_info/best/regression/models/"
+            dir_path_scaler = "lucifer_ml_info/best/regression/scalers/"
+        os.makedirs(dir_path_model, exist_ok=True)
+        os.makedirs(dir_path_scaler, exist_ok=True)
+        timestamp = str(int(time.time()))
+        path_model = (
+            dir_path_model
+            + regressors[self.predictor].replace(" ", "_")
+            + "_"
+            + timestamp
+            + ".pkl"
+        )
+        path_scaler = (
+            dir_path_scaler
+            + regressors[self.predictor].replace(" ", "_")
+            + "_"
+            + "Scaler"
+            + "_"
+            + timestamp
+            + ".pkl"
+        )
+        if (
+            not kwargs.get("model")
+            and not kwargs.get("best")
+            and not kwargs.get("scaler")
+        ):
+            dump(self.regressor, open(path_model, "wb"))
+            dump(self.sc, open(path_scaler, "wb"))
         else:
-            raise Exception(
-                "[Error] This method is only applicable on single predictor"
-            )
+            dump(kwargs.get("model"), open(path_model, "wb"))
+            dump(kwargs.get("scaler"), open(path_scaler, "wb"))
+        if not kwargs.get("best"):
+            print("Model Saved at {} and Scaler at {}".format(path_model, path_scaler))
+        return path_model, path_scaler
 
     def __load(self, path=None):
         """
         Loads model and scaler from the specified path
+
         Args:
+
             path ([list]): [List containing path to load the model and scaler.]
                 Example: path = ["model.pkl", "scaler.pkl"]
+
         Returns:
             [Model] : [Loaded model]
             [Scaler] : [Loaded scaler]
@@ -741,3 +624,26 @@ class Regression:
             return scaler
         else:
             raise ValueError("No path specified.Please provide actual path\n")
+
+    def imp_features(self, extensive=False, *args, **kwargs):
+        """
+        Returns the importance features of the dataset
+
+        Args:
+
+            extensive (bool): [If True shows the importance of all features exitensively and will take more time] [default = False]
+            **args: [Additional arguments]
+            **kwargs: [Additional keyword arguments]
+        """
+        if self.original_predictor == "all":
+            raise TypeError(
+                "[Error] This method is only applicable on single predictor"
+            )
+        if not extensive:
+            self.preprocess.permutational_feature_imp(
+                self.features, self.X_train, self.y_train, model=self.regressor
+            )
+        if extensive:
+            self.preprocess.shap_feature_imp(
+                self.features, self.X_train, model=self.regressor, *args, **kwargs
+            )

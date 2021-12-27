@@ -17,9 +17,25 @@ class Best:
         self.kfold_acc = self.__best_model["KFold Accuracy"]
         if tune == True:
             self.best_params = self.__best_model["Best Parameters"]
+            self.best_accuracy = self.__best_model["Best Accuracy"]
         else:
             self.best_params = "Run with tune = True to get best parameters"
         self.isReg = isReg
+
+    def summary(self):
+        """Returns a summary of the best model"""
+        print("\nBest Model Summary:")
+        print("Name: ", self.name)
+        if self.isReg:
+            print("R2 Score: ", self.r2_score)
+            print("Mean Absolute Error: ", self.mae)
+            print("Root Mean Squared Error: ", self.rmse)
+        else:
+            print("Accuracy: ", self.accuracy)
+        print("KFold Accuracy: ", self.kfold_acc)
+        print("Best Parameters: ", self.best_params)
+        print("Best Accuracy: ", self.best_accuracy)
+        print("\n")
 
     def predict(self, pred):
         """Predicts the output of the best model"""

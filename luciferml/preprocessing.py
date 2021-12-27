@@ -1,10 +1,12 @@
-from scipy.special import boxcox1p
-import pandas as pd
 import time
-import seaborn as sns
-from scipy.stats import norm, skew, probplot
+
 import matplotlib.pyplot as plt
-from luciferml.supervised.utils.intro import *
+import pandas as pd
+import seaborn as sns
+from scipy.special import boxcox1p
+from scipy.stats import norm, probplot, skew
+
+from luciferml.supervised.utils.configs import *
 
 
 class Preprocess:
@@ -87,7 +89,7 @@ class Preprocess:
         """
         try:
             start = time.time()
-            intro()
+            print(intro, "\n")
             print("Started Preprocessor \n")
             if not isinstance(dataset, pd.DataFrame):
                 print(

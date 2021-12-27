@@ -1,24 +1,20 @@
 import copy
-from math import e
 import os
 import time
 import warnings
 
 import numpy as np
+import optuna
 import pandas as pd
 from IPython.display import display
 from joblib import dump, load
 from luciferml.supervised.utils.best import Best
-from luciferml.supervised.utils.classificationPredictor import classificationPredictor
 from luciferml.supervised.utils.configs import *
-from luciferml.supervised.utils.confusionMatrix import confusionMatrix
-from luciferml.supervised.utils.dimensionalityReduction import dimensionalityReduction
-from luciferml.supervised.utils.encoder import encoder
-from luciferml.supervised.utils.hyperTune import hyperTune
-from luciferml.supervised.utils.intro import intro
-from luciferml.supervised.utils.kfold import kfold
-from luciferml.supervised.utils.predPreprocess import pred_preprocess
-from luciferml.supervised.utils.sparseCheck import sparseCheck
+from luciferml.supervised.utils.predictors import classification_predictor
+from luciferml.supervised.utils.preprocesser import PreProcesser
+from luciferml.supervised.utils.tuner.luciferml_tuner import luciferml_tuner
+from luciferml.supervised.utils.validator import *
+from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.metrics import accuracy_score
 
 
@@ -36,26 +32,22 @@ class Classification:
         lda="n",
         pca="n",
         n_components_pca=2,
-        hidden_layers=4,
-        output_units=1,
-        input_units=6,
-        input_activation="relu",
-        output_activation="sigmoid",
-        optimizer="adam",
         metrics=[
             "accuracy",
         ],
         loss="binary_crossentropy",
         validation_split=0.20,
-        epochs=100,
-        batch_size=32,
         tune_mode=1,
         smote="n",
         k_neighbors=1,
-        dropout_rate=0,
         verbose=False,
         exclude_models=[],
         path=None,
+        optuna_sampler=TPESampler(),
+        optuna_direction="maximize",
+        optuna_n_trials=100,
+        optuna_metric="accuracy",
+        lgbm_objective="binary",
     ):
         """
         Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, self.X_val using StandardScaler.
@@ -64,13 +56,11 @@ class Classification:
         and stores accuracy in variable name accuracy and model name in self.classifier name and returns both as a tuple.
         Applies GridSearch Cross Validation and gives best self.params out from param list.
 
-        self.Parameters:
+        Parameters:
             features : array
                         features array
-
             lables : array
                         labels array
-
             predictor : str
                         Predicting model to be used
                         Default 'lr'
@@ -92,20 +82,18 @@ class Classification:
                                 lgbm - LightGBM Classifier
                                 cat - CatBoost Classifier
                                 xgb- XGBoost self.Classifier
-                                ann - Artificial Neural Network
+                                ann - MultiLayer Perceptron Classifier
                                 all - Applies all above classifiers
             params : dict
                         contains parameters for model
             tune : boolean
                     when True Applies GridSearch CrossValidation
                     Default is False
-
             test_size: float or int, default=.2
                         If float, should be between 0.0 and 1.0 and represent
                         the proportion of the dataset to include in
                         the test split.
                         If int, represents the absolute number of test samples.
-
             cv_folds : int
                     No. of cross validation folds. Default = 10
             pca : str
@@ -118,27 +106,8 @@ class Classification:
                     No. of components for LDA. Default = 1
             n_components_pca : int
                     No. of components for PCA. Default = 2
-            hidden_layers : int
-                    No. of default layers of ann. Default = 4
-            inputs_units : int
-                    No. of units in input layer. Default = 6
-            output_units : int
-                    No. of units in output layer. Default = 6
-            input_activation : str
-                    Activation function for Hidden layers. Default = 'relu'
-            output_activation : str
-                    Activation function for Output layers. Default = 'sigmoid'
-            optimizer: str
-                    Optimizer for ann. Default = 'adam'
             loss : str
                     loss method for ann. Default = 'binary_crossentropy'
-            validation_split : float or int
-                    Percentage of validation set splitting in ann. Default = .20
-            epochs : int
-                    No. of epochs for ann. Default = 100
-            batch_size :
-                    Batch Size for ANN. Default = 32
-            dropout_rate : int or float
                     rate for dropout layer. Default = 0
             tune_mode : int
                     HyperParam tune modes. Default = 1
@@ -157,6 +126,21 @@ class Classification:
             path : list
                 List containing path to saved model and scaler. Default = None
                 Example: [model.pkl, scaler.pkl]
+            random_state : int
+                Random random_state for reproducibility. Default = 42
+            optuna_sampler : Function
+                Sampler to be used in optuna. Default = TPESampler()
+            optuna_direction : str
+                Direction of optimization. Default = 'maximize'
+                Available Directions:
+                    maximize : Maximize
+                    minimize : Minimize
+            optuna_n_trials : int
+                No. of trials for optuna. Default = 100
+            optuna_metric: str
+                Metric to be used in optuna. Default = 'r2'
+            lgbm_objective : str
+                Objective for lgbm classifier. Default = 'binary'
 
         Returns:
             Dict Containing Name of Classifiers, Its K-Fold Cross Validated Accuracy and Prediction set
@@ -179,8 +163,11 @@ class Classification:
             result = classifier.result()
 
         """
-
+        self.preprocess = PreProcesser()
         self.predictor = predictor
+        if not pred_check(predictor, type="classification"):
+            raise ValueError(unsupported_pred_warning)
+        self.original_predictor = predictor
         self.params = params
         self.tune = tune
         self.test_size = test_size
@@ -191,24 +178,20 @@ class Classification:
         self.lda = lda
         self.pca = pca
         self.n_components_pca = n_components_pca
-        self.hidden_layers = hidden_layers
-        self.output_units = output_units
-        self.input_units = input_units
-        self.input_activation = input_activation
-        self.output_activation = output_activation
-        self.optimizer = optimizer
         self.metrics = metrics
         self.loss = loss
         self.validation_split = validation_split
-        self.epochs = epochs
-        self.batch_size = batch_size
-        self.dropout_rate = dropout_rate
         self.tune_mode = tune_mode
         self.rerun = False
         self.smote = smote
         self.k_neighbors = k_neighbors
         self.verbose = verbose
         self.exclude_models = exclude_models
+        self.sampler = optuna_sampler
+        self.direction = optuna_direction
+        self.n_trials = optuna_n_trials
+        self.metric = optuna_metric
+        self.lgbm_objective = lgbm_objective
 
         self.accuracy_scores = {}
         self.reg_result = {}
@@ -222,6 +205,7 @@ class Classification:
         self.acc = []
         self.bestacc = []
         self.bestparams = []
+        self.tuned_trained_model = []
         self.best_classifier_path = ""
         self.scaler_path = ""
         self.classifier_model = []
@@ -231,7 +215,7 @@ class Classification:
             self.classifiers.pop(i)
         self.result_df["Name"] = list(self.classifiers.values())
         self.best_classifier = "First Run the Predictor in All mode"
-
+        self.objective = None
         self.pred_mode = ""
 
         if path != None:
@@ -240,6 +224,8 @@ class Classification:
             except Exception as e:
                 print(e)
                 print("Model not found")
+        if not self.verbose:
+            optuna.logging.set_verbosity(optuna.logging.WARNING)
 
     def fit(self, features, labels):
         """[Takes Features and Labels and Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -258,7 +244,7 @@ class Classification:
         # Time Function ---------------------------------------------------------------------
 
         self.start = time.time()
-        intro()
+        print(intro, "\n")
         print("Started LuciferML \n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
@@ -274,10 +260,12 @@ class Classification:
 
             # Encoding ---------------------------------------------------------------------
 
-            self.features, self.labels = encoder(self.features, self.labels)
+            self.features, self.labels = self.preprocess.encoder(
+                self.features, self.labels
+            )
 
             # Sparse Check -------------------------------------------------------------
-            self.features, self.labels = sparseCheck(self.features, self.labels)
+            self.features, self.labels = sparse_check(self.features, self.labels)
 
             # Preprocessing ---------------------------------------------------------------------
             (
@@ -286,7 +274,7 @@ class Classification:
                 self.y_train,
                 self.y_val,
                 self.sc,
-            ) = pred_preprocess(
+            ) = self.preprocess.data_preprocess(
                 self.features,
                 self.labels,
                 self.test_size,
@@ -296,7 +284,7 @@ class Classification:
             )
 
             # Dimensionality Reduction---------------------------------------------------------------------
-            self.X_train, self.X_val = dimensionalityReduction(
+            self.X_train, self.X_val = self.preprocess.dimensionality_reduction(
                 self.lda,
                 self.pca,
                 self.X_train,
@@ -309,66 +297,25 @@ class Classification:
             )
 
         # Models ---------------------------------------------------------------------
-        if self.predictor == "all":
+        if self.original_predictor == "all":
             self.pred_mode = "all"
             self.__fitall()
             return
 
-        elif self.predictor == "ann":
-            (
-                self.parameters,
-                self.classifier,
-                self.classifier_wrap,
-            ) = classificationPredictor(
-                self.predictor,
-                self.params,
-                self.X_train,
-                self.X_val,
-                self.y_train,
-                self.y_val,
-                self.epochs,
-                self.hidden_layers,
-                self.input_activation,
-                self.output_activation,
-                self.loss,
-                self.batch_size,
-                self.metrics,
-                self.validation_split,
-                self.optimizer,
-                self.output_units,
-                self.input_units,
-                self.tune_mode,
-                self.dropout_rate,
-                verbose=self.verbose,
-            )
-
-        else:
-            self.parameters, self.classifier = classificationPredictor(
-                self.predictor,
-                self.params,
-                self.X_train,
-                self.X_val,
-                self.y_train,
-                self.y_val,
-                self.epochs,
-                self.hidden_layers,
-                self.input_activation,
-                self.output_activation,
-                self.loss,
-                self.batch_size,
-                self.metrics,
-                self.validation_split,
-                self.optimizer,
-                self.output_units,
-                self.input_units,
-                self.tune_mode,
-                verbose=self.verbose,
-            )
+        self.classifier, self.objective = classification_predictor(
+            self.predictor,
+            self.params,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+            self.random_state,
+            self.metric,
+            verbose=self.verbose,
+            lgbm_objective=self.lgbm_objective,
+        )
 
         try:
-
-            if not self.predictor == "ann":
-                self.classifier.fit(self.X_train, self.y_train)
+            self.classifier.fit(self.X_train, self.y_train)
         except Exception as error:
             print("Model Train Failed with error: ", error, "\n")
 
@@ -383,34 +330,25 @@ class Classification:
             print("Prediction Failed with error: ", error, "\n")
 
         # Confusion Matrix --------------------------------------------------------------
-        confusionMatrix(self.y_pred, self.y_val)
+        self.preprocess.confusion_matrix(self.y_pred, self.y_val)
 
         # Accuracy ---------------------------------------------------------------------
         print("""Evaluating Model Performance [*]""")
         try:
             self.accuracy = accuracy_score(self.y_val, self.y_pred)
-            print("Validation Accuracy is :", self.accuracy)
+            print("Validation Accuracy is :", self.accuracy * 100)
             print("Evaluating Model Performance [", u"\u2713", "]\n")
         except Exception as error:
             print("Model Evaluation Failed with error: ", error, "\n")
 
         # K-Fold ---------------------------------------------------------------------
-        if self.predictor == "ann":
-            self.classifier_name, self.kfold_accuracy = kfold(
-                self.classifier_wrap,
-                self.predictor,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-            )
-        else:
-            self.classifier_name, self.kfold_accuracy = kfold(
-                self.classifier,
-                self.predictor,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-            )
+        self.classifier_name, self.kfold_accuracy = kfold(
+            self.classifier,
+            self.predictor,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+        )
 
         # GridSearch ---------------------------------------------------------------------
         if not self.predictor == "nb" and self.tune:
@@ -427,57 +365,18 @@ class Classification:
             self.params = {}
         for _, self.predictor in enumerate(self.classifiers):
             if not self.predictor in self.exclude_models:
-                if not self.predictor == "ann":
-                    self.parameters, self.classifier = classificationPredictor(
-                        self.predictor,
-                        self.params,
-                        self.X_train,
-                        self.X_val,
-                        self.y_train,
-                        self.y_val,
-                        self.epochs,
-                        self.hidden_layers,
-                        self.input_activation,
-                        self.output_activation,
-                        self.loss,
-                        self.batch_size,
-                        self.metrics,
-                        self.validation_split,
-                        self.optimizer,
-                        self.output_units,
-                        self.input_units,
-                        self.tune_mode,
-                        all_mode=True,
-                        verbose=self.verbose,
-                    )
-                elif self.predictor == "ann":
-                    (
-                        self.parameters,
-                        self.classifier,
-                        self.classifier_wrap,
-                    ) = classificationPredictor(
-                        self.predictor,
-                        self.params,
-                        self.X_train,
-                        self.X_val,
-                        self.y_train,
-                        self.y_val,
-                        self.epochs,
-                        self.hidden_layers,
-                        self.input_activation,
-                        self.output_activation,
-                        self.loss,
-                        self.batch_size,
-                        self.metrics,
-                        self.validation_split,
-                        self.optimizer,
-                        self.output_units,
-                        self.input_units,
-                        self.tune_mode,
-                        self.dropout_rate,
-                        all_mode=True,
-                        verbose=self.verbose,
-                    )
+                self.classifier, self.objective = classification_predictor(
+                    self.predictor,
+                    self.params,
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    self.random_state,
+                    self.metric,
+                    all_mode=True,
+                    verbose=self.verbose,
+                    lgbm_objective=self.lgbm_objective,
+                )
                 try:
 
                     if not self.predictor == "ann":
@@ -514,24 +413,14 @@ class Classification:
                     )
 
                 # K-Fold ---------------------------------------------------------------------
-                if self.predictor == "ann":
-                    self.classifier_name, self.kfold_accuracy = kfold(
-                        self.classifier_wrap,
-                        self.predictor,
-                        self.X_train,
-                        self.y_train,
-                        self.cv_folds,
-                        all_mode=True,
-                    )
-                else:
-                    self.classifier_name, self.kfold_accuracy = kfold(
-                        self.classifier,
-                        self.predictor,
-                        self.X_train,
-                        self.y_train,
-                        self.cv_folds,
-                        all_mode=True,
-                    )
+                self.classifier_name, self.kfold_accuracy = kfold(
+                    self.classifier,
+                    self.predictor,
+                    self.X_train,
+                    self.y_train,
+                    self.cv_folds,
+                    all_mode=True,
+                )
                 self.kfoldacc.append(self.kfold_accuracy)
                 self.classifier_model.append(self.classifier)
                 # GridSearch ---------------------------------------------------------------------
@@ -546,10 +435,14 @@ class Classification:
         if self.tune:
             self.result_df["Best Parameters"] = self.bestparams
             self.result_df["Best Accuracy"] = self.bestacc
-
-        self.best_classifier = Best(
-            self.result_df.loc[self.result_df["KFold Accuracy"].idxmax()], self.tune
-        )
+            self.best_classifier = Best(
+                self.result_df.loc[self.result_df["Best Accuracy"].idxmax()],
+                self.tune,
+            )
+        else:
+            self.best_classifier = Best(
+                self.result_df.loc[self.result_df["KFold Accuracy"].idxmax()], self.tune
+            )
         self.best_classifier_path, self.scaler_path = self.save(
             best=True, model=self.best_classifier.model, scaler=self.sc
         )
@@ -560,7 +453,7 @@ class Classification:
             ),
             "\n",
         )
-        display(self.result_df.iloc[:, :-1])
+        display(self.result_df)
         print("Complete [", u"\u2713", "]\n")
         self.end = time.time()
         print("Time Elapsed : ", self.end - self.start, "seconds \n")
@@ -568,34 +461,26 @@ class Classification:
 
     def __tuner(self, all_mode=False):
         if not all_mode:
-            print(
-                "Applying Grid Search Cross validation on Mode {} [*]".format(
-                    self.tune_mode
-                )
-            )
-        if self.predictor == "ann":
-            self.best_params, self.best_accuracy = hyperTune(
-                self.classifier_wrap,
-                self.parameters,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                self.tune_mode,
-                all_mode=all_mode,
-            )
-        else:
-            self.best_params, self.best_accuracy = hyperTune(
-                self.classifier,
-                self.parameters,
-                self.X_train,
-                self.y_train,
-                self.cv_folds,
-                self.tune_mode,
-                all_mode=all_mode,
-            )
+            print("HyperParam Tuning Started [*]\n")
+        self.best_params, self.best_accuracy, self.best_trained_model = luciferml_tuner(
+            self.predictor,
+            self.objective,
+            self.n_trials,
+            self.sampler,
+            self.direction,
+            self.X_train,
+            self.y_train,
+            self.cv_folds,
+            self.random_state,
+            self.metric,
+            all_mode=all_mode,
+        )
 
         self.bestparams.append(self.best_params)
         self.bestacc.append(self.best_accuracy * 100)
+        self.tuned_trained_model.append(self.best_trained_model)
+        if not all_mode:
+            print("HyperParam Tuning Done [", u"\u2713", "]\n")
 
     def result(self):
         """[Makes a dictionary containing Classifier Name, K-Fold CV Accuracy, RMSE, Prediction set.]
@@ -654,50 +539,43 @@ class Classification:
         if not type(path) == list and path != None:
             raise TypeError("Path must be a list")
 
-        if not self.predictor == "all":
-            dir_path_model = path[0] if path else "lucifer_ml_info/models/classifier/"
-            dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/classifier/"
-            if kwargs.get("best"):
-                dir_path_model = "lucifer_ml_info/best/classifier/models/"
-                dir_path_scaler = "lucifer_ml_info/best/classifier/scalers/"
-            os.makedirs(dir_path_model, exist_ok=True)
-            os.makedirs(dir_path_scaler, exist_ok=True)
-            timestamp = str(int(time.time()))
-            path_model = (
-                dir_path_model
-                + classifiers[self.predictor].replace(" ", "_")
-                + "_"
-                + timestamp
-                + ".pkl"
-            )
-            path_scaler = (
-                dir_path_scaler
-                + classifiers[self.predictor].replace(" ", "_")
-                + "_"
-                + "Scaler"
-                + "_"
-                + timestamp
-                + ".pkl"
-            )
-            if (
-                not kwargs.get("model")
-                and not kwargs.get("best")
-                and not kwargs.get("scaler")
-            ):
-                dump(self.classifier, open(path_model, "wb"))
-                dump(self.sc, open(path_scaler, "wb"))
-            else:
-                dump(kwargs.get("model"), open(path_model, "wb"))
-                dump(kwargs.get("scaler"), open(path_scaler, "wb"))
-            if not kwargs.get("best"):
-                print(
-                    "Model Saved at {} and Scaler at {}".format(path_model, path_scaler)
-                )
-            return path_model, path_scaler
+        dir_path_model = path[0] if path else "lucifer_ml_info/models/classifier/"
+        dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/classifier/"
+        if kwargs.get("best"):
+            dir_path_model = "lucifer_ml_info/best/classifier/models/"
+            dir_path_scaler = "lucifer_ml_info/best/classifier/scalers/"
+        os.makedirs(dir_path_model, exist_ok=True)
+        os.makedirs(dir_path_scaler, exist_ok=True)
+        timestamp = str(int(time.time()))
+        path_model = (
+            dir_path_model
+            + classifiers[self.predictor].replace(" ", "_")
+            + "_"
+            + timestamp
+            + ".pkl"
+        )
+        path_scaler = (
+            dir_path_scaler
+            + classifiers[self.predictor].replace(" ", "_")
+            + "_"
+            + "Scaler"
+            + "_"
+            + timestamp
+            + ".pkl"
+        )
+        if (
+            not kwargs.get("model")
+            and not kwargs.get("best")
+            and not kwargs.get("scaler")
+        ):
+            dump(self.classifier, open(path_model, "wb"))
+            dump(self.sc, open(path_scaler, "wb"))
         else:
-            raise Exception(
-                "[Error] This method is only applicable on single predictor"
-            )
+            dump(kwargs.get("model"), open(path_model, "wb"))
+            dump(kwargs.get("scaler"), open(path_scaler, "wb"))
+        if not kwargs.get("best"):
+            print("Model Saved at {} and Scaler at {}".format(path_model, path_scaler))
+        return path_model, path_scaler
 
     def __load(self, path=None):
         """
@@ -740,3 +618,26 @@ class Classification:
             return scaler
         else:
             raise ValueError("No path specified.Please provide actual path\n")
+
+    def imp_features(self, extensive=False, *args, **kwargs):
+        """
+        Returns the importance features of the dataset
+
+        Args:
+
+            extensive (bool): [If True shows the importance of all features exitensively and will take more time] [default = False]
+            **args: [Additional arguments]
+            **kwargs: [Additional keyword arguments]
+        """
+        if self.original_predictor == "all":
+            raise TypeError(
+                "[Error] This method is only applicable on single predictor"
+            )
+        if not extensive:
+            self.preprocesspermutational_feature_imp(
+                self.features, self.X_train, self.y_train, model=self.classifier
+            )
+        if extensive:
+            self.preprocessshap_feature_imp(
+                self.features, self.X_train, model=self.classifier, *args, **kwargs
+            )

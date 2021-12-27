@@ -1,4 +1,3 @@
-
 # Regression
 
 Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
@@ -9,46 +8,43 @@ and stores its accuracies in a dictionary containing Model name as Key and accur
 Applies GridSearch Cross Validation and gives best params out from param list.
 
 Parameters:
-
         features : array
-                        features array
-
+                features array
         lables : array
-                        labels array
-
+                labels array
         predictor : str
                 Predicting model to be used
                 Default 'lin'
-                        Predictor Strings:
-                                lin  - Linear Regression
-                                sgd  - Stochastic Gradient Descent Regressor
-                                elas - Elastic Net Regressor
-                                krr  - Kernel Ridge Regressor
-                                br   - Bayesian Ridge Regressor
-                                svr  - Support Vector Regressor
-                                knr  - K-Nearest Regressor
-                                dt   - Decision Trees
-                                rfr  - Random Forest Regressor
-                                gbr  - Gradient Boost Regressor
-                                ada  - AdaBoost Regressor,
-                                bag  - Bagging Regressor,
-                                extr - Extra Trees Regressor,
-                                lgbm - LightGB Regressor
-                                xgb  - XGBoost Regressor
-                                cat  - Catboost Regressor
-                                ann  - Artificial Neural Network
-                                all  - Applies all above regressors
+                Predictor Strings:
+                        lin  - Linear Regression
+                        sgd  - Stochastic Gradient Descent Regressor
+                        elas - Elastic Net Regressor
+                        krr  - Kernel Ridge Regressor
+                        br   - Bayesian Ridge Regressor
+                        svr  - Support Vector Regressor
+                        knr  - K-Nearest Regressor
+                        dt   - Decision Trees
+                        rfr  - Random Forest Regressor
+                        gbr  - Gradient Boost Regressor
+                        ada  - AdaBoost Regressor,
+                        bag  - Bagging Regressor,
+                        extr - Extra Trees Regressor,
+                        lgbm - LightGB Regressor
+                        xgb  - XGBoost Regressor
+                        cat  - Catboost Regressor
+                        ann  - Multi Layer Perceptron Regressor
+                        all  - Applies all above regressors
         params : dict
-                        contains parameters for model
+                contains parameters for model
         tune : boolean
                 when True Applies GridSearch CrossValidation
                 Default is False
 
         test_size: float or int, default=.2
-                        If float, should be between 0.0 and 1.0 and represent
-                        the proportion of the dataset to include in
-                        the test split.
-                        If int, represents the absolute number of test samples.
+                If float, should be between 0.0 and 1.0 and represent
+                the proportion of the dataset to include in
+                the test split.
+                If int, represents the absolute number of test samples.
 
         cv_folds : int
                 No. of cross validation folds. Default = 10
@@ -62,32 +58,8 @@ Parameters:
                 No. of components for LDA. Default = 1
         n_components_pca : int
                 No. of components for PCA. Default = 2
-        hidden_layers : int
-                No. of default layers of ann. Default = 4
-        inputs_units : int
-                No. of units in input layer. Default = 6
-        output_units : int
-                No. of units in output layer. Default = 6
-        input_activation : str
-                Activation function for Hidden layers. Default = 'relu'
-        optimizer: str
-                Optimizer for ann. Default = 'adam'
         loss : str
                 loss method for ann. Default = 'mean_squared_error'
-        validation_split : float or int
-                Percentage of validation set splitting in ann. Default = .20
-        epochs : int
-                No. of epochs for ann. Default = 100
-        dropout_rate : int or float
-                rate for dropout layer. Default = 0
-        batch_size :
-                Batch Size for ANN. Default = 32
-        tune_mode : int
-                HyperParam tune modes. Default = 1
-                        Available Modes:
-                        1 : Basic Tune
-                        2 : Intermediate Tune
-                        3 : Extreme Tune (Can Take Much Time)
         smote : str,
                 Whether to apply SMOTE. Default = 'y'
         k_neighbors : int
@@ -98,15 +70,27 @@ Parameters:
                 List of models to be excluded when using predictor = 'all' . Default = []
         path : list
                 List containing path to saved model and scaler. Default = None
-                Example: [model.pkl, scaler.pkl]
+        Example: [model.pkl, scaler.pkl]
+        random_state : int
+                Random random_state for reproducibility. Default = 42
+        optuna_sampler : Function
+                Sampler to be used in optuna. Default = TPESampler()
+        optuna_direction : str
+                Direction of optimization. Default = 'maximize'
+        Available Directions:
+                maximize : Maximize
+                minimize : Minimize
+        optuna_n_trials : int
+                No. of trials for optuna. Default = 100
+        optuna_metric: str
+                Metric to be used in optuna. Default = 'r2'
 
 Returns:
 
         Dict Containing Name of Regressor, Its K-Fold Cross Validated Accuracy, RMSE, Prediction set
-
         Dataframe containing all the models and their accuracies when predictor is 'all'
 
-Example :
+Example:
 
         from luciferml.supervised.regression import Regression
         dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')

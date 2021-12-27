@@ -1,3 +1,13 @@
+intro = """
+          
+██╗░░░░░██╗░░░██╗░█████╗░██╗███████╗███████╗██████╗░░░░░░░███╗░░░███╗██╗░░░░░
+██║░░░░░██║░░░██║██╔══██╗██║██╔════╝██╔════╝██╔══██╗░░░░░░████╗░████║██║░░░░░
+██║░░░░░██║░░░██║██║░░╚═╝██║█████╗░░█████╗░░██████╔╝█████╗██╔████╔██║██║░░░░░
+██║░░░░░██║░░░██║██║░░██╗██║██╔══╝░░██╔══╝░░██╔══██╗╚════╝██║╚██╔╝██║██║░░░░░
+███████╗╚██████╔╝╚█████╔╝██║██║░░░░░███████╗██║░░██║░░░░░░██║░╚═╝░██║███████╗
+╚══════╝░╚═════╝░░╚════╝░╚═╝╚═╝░░░░░╚══════╝╚═╝░░╚═╝░░░░░░╚═╝░░░░░╚═╝╚══════╝
+"""
+
 classifiers = {
     "lr": "Logistic Regression",
     "sgd": "Stochastic Gradient Descent",
@@ -18,6 +28,7 @@ classifiers = {
     "xgb": "XGBoost Classifier",
     "ann": "Artificial Neural Network",
 }
+
 regressors = {
     "lin": "Linear Regression",
     "sgd": "Stochastic Gradient Descent Regressor",
@@ -35,9 +46,13 @@ regressors = {
     "lgbm": "LightGBM Regressor",
     "xgb": "XGBoost Regressor",
     "cat": "Catboost Regressor",
-    "ann": "Artificial Neural Network",
+    "ann": "Multi-Layer Perceptron Regressor",
 }
 
 params_use_warning = (
     "Params will not work with predictor = 'all'. Settings params = {} "
 )
+
+unsupported_pred_warning = """Predictor not available. Please use the predictor which is supported by LuciferML.
+Please check the documentation for more details.\n
+"""
