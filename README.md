@@ -72,7 +72,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'lgbm': 'LightGBM Classifier',
         - 'cat' : 'CatBoost Classifier',
         - 'xgb' : 'XGBoost Classifier',
-        - 'ann' : 'Artificial Neural Network',
+        - 'ann' : 'Multilayer Perceptron Classifier',
         - 'all' : 'Applies all above classifiers'
 
     Example:
@@ -107,7 +107,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'lgbm': 'LightGBM Regressor',
         - 'xgb' : 'XGBoost Regressor',
         - 'cat' : 'Catboost Regressor',
-        - 'ann' : 'Artificial Neural Network',
+        - 'ann' : 'Multilayer Perceptron Regressor',
         - 'all' : 'Applies all above regressors'
 
     Example:
@@ -121,6 +121,10 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         result = regressor.result()
 
     More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Regression.md)
+
+## Hyperparameter Tuning
+
+LuciferML is powered by [Optuna](https://github.com/optuna/optuna) for Hyperparam tuning. Just add "tune = True" in either Regressor or Classifier it will start tuning the model/s with Optuna.
 
 ## Persistence
 
