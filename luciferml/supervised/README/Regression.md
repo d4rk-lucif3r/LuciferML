@@ -5,7 +5,7 @@ scales X_train, X_val using StandardScaler.
 Fits every model on training set and predicts results,Finds R2 Score and mean square error
 finds accuracy of model applies K-Fold Cross Validation
 and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
-Applies GridSearch Cross Validation and gives best params out from param list.
+Applies HyperParam Tuning and gives best params and accuracy.
 
 Parameters:
         features : array

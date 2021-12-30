@@ -4,7 +4,7 @@
 Fits every model on training set and predicts results find and plots Confusion Matrix,
 finds accuracy of model applies K-Fold Cross Validation
 and stores accuracy in variable name accuracy and model name in self.classifier name and returns both as a tuple.
-Applies GridSearch Cross Validation and gives best self.params out from param list.
+Applies HyperParam Tuning and gives best params and accuracy.
 
 Parameters:
         features : array
