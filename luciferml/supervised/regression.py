@@ -45,14 +45,15 @@ class Regression:
         optuna_metric="r2",
     ):
         """
-        Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2
-        scales X_train, X_val using StandardScaler.
-        Fits every model on training set and predicts results,Finds R2 Score and mean square error
-        finds accuracy of model applies K-Fold Cross Validation
-        and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it
-        Applies GridSearch Cross Validation and gives best params out from param list.
+        Encodes Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2\n
+        scales X_train, X_val using StandardScaler.\n
+        Fits every model on training set and predicts results,Finds R2 Score and mean square error\n
+        finds accuracy of model applies K-Fold Cross Validation\n
+        and stores its accuracies in a dictionary containing Model name as Key and accuracies as values and returns it\n
+        Applies HyperParam Tuning and gives best params and accuracy.\n
 
         Parameters:
+        
             features : array
                         features array
             lables : array

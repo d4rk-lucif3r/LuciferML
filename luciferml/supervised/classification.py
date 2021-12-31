@@ -50,13 +50,14 @@ class Classification:
         lgbm_objective="binary",
     ):
         """
-        Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, self.X_val using StandardScaler.
-        Fits every model on training set and predicts results find and plots Confusion Matrix,
-        finds accuracy of model applies K-Fold Cross Validation
-        and stores accuracy in variable name accuracy and model name in self.classifier name and returns both as a tuple.
-        Applies GridSearch Cross Validation and gives best self.params out from param list.
+        Encode Categorical Data then Applies SMOTE , Splits the features and labels in training and validation sets with test_size = .2 , scales self.X_train, self.X_val using StandardScaler.\n
+        Fits every model on training set and predicts results find and plots Confusion Matrix,\n
+        finds accuracy of model applies K-Fold Cross Validation\n
+        and stores accuracy in variable name accuracy and model name in self.classifier name and returns both as a tuple.\n
+        Applies HyperParam Tuning and gives best params and accuracy.\n
 
         Parameters:
+        
             features : array
                         features array
             lables : array
