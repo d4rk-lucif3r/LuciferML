@@ -5,9 +5,9 @@ from luciferml.supervised.utils.configs import *
 
 def pred_check(predictor, type):
     if type == "regression":
-        avlbl_predictors = list(regressors.keys())
+        avlbl_predictors = list(regressors_ver.keys())
     elif type == "classification":
-        avlbl_predictors = list(classifiers.keys())
+        avlbl_predictors = list(classifiers_ver.keys())
     if predictor in avlbl_predictors:
         return True
     else:
