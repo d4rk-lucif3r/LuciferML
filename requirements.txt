@@ -10,3 +10,4 @@ tensorflow
 catboost
 lightgbm
 optuna
+shap
