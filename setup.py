@@ -18,7 +18,7 @@ setup(
         "luciferml.supervised.utils.tuner.optuna",
         "luciferml.supervised.utils.tuner.optuna.objectives",
     ],
-    version="0.0.71",
+    version="0.0.71a",
     license="MIT",
     description="Automated ML by d4rk-lucif3r",
     long_description=long_description,
