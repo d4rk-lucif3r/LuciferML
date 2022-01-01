@@ -251,7 +251,7 @@ class Classification:
         # Time Function ---------------------------------------------------------------------
 
         self.start = time.time()
-        print(Fore.LIGHTBLACK_EX + intro, "\n")
+        print(Fore.MAGENTA + intro, "\n")
         print(Fore.GREEN + "Started LuciferML [", "\u2713", "]\n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
