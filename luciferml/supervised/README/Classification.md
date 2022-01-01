@@ -7,6 +7,7 @@ and stores accuracy in variable name accuracy and model name in self.classifier 
 Applies HyperParam Tuning and gives best params and accuracy.
 
 Parameters:
+
         features : array
                 features array
         lables : array
