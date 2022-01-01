@@ -1,5 +1,6 @@
 import copy
 import os
+from re import S
 import time
 import warnings
 
@@ -163,7 +164,11 @@ class Classification:
         """
         self.preprocess = PreProcesser()
         if type(predictor) == list:
-            self.predictor = predictor[0] if len(predictor) == 1 else predictor
+            if not "all" in predictor:
+                self.predictor = predictor[0] if len(
+                    predictor) == 1 else predictor
+            else:
+                self.predictor = predictor
         else:
             self.predictor = predictor
         bool_pred, pred = pred_check(predictor, pred_type="classification")
@@ -298,15 +303,19 @@ class Classification:
         print(Fore.GREEN + "Preprocessing Done [", "\u2713", "]\n")
 
         if self.original_predictor == "all" or type(self.predictor) == list:
+            if 'all' in self.predictor and type(self.predictor)==list:
+                self.predictor.remove('all')
             self.model_to_predict = (
-                self.predictor if type(self.predictor) == list else [self.classifiers]
+                self.predictor if len(self.predictor) > 1 and type(self.predictor) == list else self.classifiers
             )
+            
             self.result_df["Name"] = (
-                list(self.classifiers.values())
-                if not type(self.predictor) == list
-                else list(self.classifiers[i] for i in self.predictor)
+                list(self.classifiers[i] for i in self.predictor)
+                if type(self.predictor) == list and len(self.predictor) > 1
+                else list(self.classifiers.values())
             )
-            self.pred_mode = "all" if len(self.predictor) > 1 else "single"
+            self.pred_mode = "all" if len(self.predictor) > 1 and type(
+                self.predictor) == list else "single"
             self.__fitall()
             return
 
@@ -324,7 +333,7 @@ class Classification:
         try:
             self.classifier.fit(self.X_train, self.y_train)
         except Exception as error:
-            print(Fore.RED + "Model Train Failed with error: ", error, "\n")
+            print(Fore.RED + "Classifier Build Failed with error: ", error, "\n")
         finally:
             print(Fore.GREEN + "Model Trained Successfully [", "\u2713", "]\n")
 
@@ -344,7 +353,7 @@ class Classification:
             )
             self.preprocess.confusion_matrix(self.y_pred, self.y_val)
         except Exception as error:
-            print(Fore.RED + "Prediction Failed with error: ", error, "\n")
+            print(Fore.RED + "Model Evaluation Failed with error: ", error, "\n")
         finally:
             print(Fore.GREEN + "Model Evaluation Completed [", "\u2713", "]\n")
 
@@ -363,7 +372,8 @@ class Classification:
             self.params = {}
         for _, self.predictor in enumerate(self.model_to_predict):
             if not self.predictor in self.exclude_models:
-                self.classifier, self.objective = classification_predictor(
+                try:
+                    self.classifier, self.objective = classification_predictor(
                     self.predictor,
                     self.params,
                     self.X_train,
@@ -375,10 +385,6 @@ class Classification:
                     verbose=self.verbose,
                     lgbm_objective=self.lgbm_objective,
                 )
-                try:
-
-                    if not self.predictor == "ann":
-                        self.classifier.fit(self.X_train, self.y_train)
                 except Exception as error:
                     print(
                         Fore.RED + classifiers[self.predictor],
@@ -387,6 +393,7 @@ class Classification:
                         "\n",
                     )
                 try:
+                    self.classifier.fit(self.X_train, self.y_train)
                     self.y_pred = self.classifier.predict(self.X_val)
                     if self.predictor == "ann":
                         self.y_pred = (self.y_pred > 0.5).astype("int32")

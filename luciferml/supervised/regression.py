@@ -154,7 +154,10 @@ class Regression:
         """
         self.preprocess = PreProcesser()
         if type(predictor) == list:
-            self.predictor = predictor[0] if len(predictor) == 1 else predictor
+            if not "all" in predictor:
+                self.predictor = predictor[0] if len(predictor) == 1 else predictor
+            else:
+                self.predictor = predictor
         else:
             self.predictor = predictor
         bool_pred, pred = pred_check(predictor, pred_type="regression")
@@ -289,15 +292,18 @@ class Regression:
         print(Fore.GREEN + "Preprocessing Done [", "\u2713", "]\n")
 
         if self.original_predictor == "all" or type(self.predictor) == list:
+            if 'all' in self.predictor and type(self.predictor)==list:
+                self.predictor.remove('all')
             self.model_to_predict = (
-                self.predictor if type(self.predictor) == list else [self.regressors]
+                self.predictor if len(self.predictor) > 1 and type(self.predictor) == list else self.regressors
             )
             self.result_df["Name"] = (
-                list(self.regressors.values())
-                if not type(self.predictor) == list
-                else list(self.regressors[i] for i in self.predictor)
+                list(self.regressors[i] for i in self.predictor)
+                if type(self.predictor) == list and len(self.predictor) > 1
+                else list(self.regressors.values())
             )
-            self.pred_mode = "all" if len(self.predictor) > 1 else "single"
+            self.pred_mode = "all" if type(self.predictor) == list and len(
+                self.predictor) > 1 else "single"
             self.__fitall()
             return
         self.regressor, self.objective = regression_predictor(
@@ -313,7 +319,7 @@ class Regression:
         try:
             self.regressor.fit(self.X_train, self.y_train)
         except Exception as error:
-            print(Fore.RED + "Model Train Failed with error: ", error, "\n")
+            print(Fore.RED + "Regressor Build Failed with error: ", error, "\n")
         finally:
             print(Fore.GREEN + "Model Trained Successfully [", "\u2713", "]\n")
 
