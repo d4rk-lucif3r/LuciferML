@@ -1,17 +1,24 @@
 from sklearn.model_selection import cross_val_score
 import scipy
 from luciferml.supervised.utils.configs import *
+from colorama import Fore
 
 
-def pred_check(predictor, type):
-    if type == "regression":
+def pred_check(predictor, pred_type):
+    if pred_type == "regression":
         avlbl_predictors = list(regressors_ver.keys())
-    elif type == "classification":
+    elif pred_type == "classification":
         avlbl_predictors = list(classifiers_ver.keys())
-    if predictor in avlbl_predictors:
-        return True
-    else:
-        return False
+    if type(predictor) == str:
+        if predictor in avlbl_predictors:
+            return True, predictor
+        else:
+            return False, predictor
+    elif type(predictor) == list:
+        for i in predictor:
+            if i not in avlbl_predictors:
+                return False, i
+        return True, None
 
 
 def sparse_check(features, labels):
@@ -21,24 +28,12 @@ def sparse_check(features, labels):
         Takes features and labels as input and checks if any of those is sparse csr_matrix.
         """
     try:
-        print("Checking for Sparse Matrix [*]\n")
         if scipy.sparse.issparse(features[()]):
-            print("Converting Sparse Features to array []\n")
             features = features[()].toarray()
-            print("Conversion of Sparse Features to array Done [", u"\u2713", "]\n")
-
         elif scipy.sparse.issparse(labels[()]):
-            print("Converting Sparse Labels to array []\n")
             labels = labels[()].toarray()
-            print("Conversion of Sparse Labels to array Done [", u"\u2713", "]\n")
-
-        else:
-            print("No Sparse Matrix Found")
-
     except Exception as error:
-        # print('Sparse matrix Check failed with KeyError: ', error)
         pass
-    print("Checking for Sparse Matrix Done [", u"\u2713", "]\n")
     return (features, labels)
 
 
@@ -54,22 +49,22 @@ def kfold(model, predictor, X_train, y_train, cv_folds, isReg=False, all_mode=Fa
         name = regressors
         scoring = "r2"
     try:
-        if not all_mode:
-            print("Applying K-Fold Cross Validation [*]")
         accuracies = cross_val_score(
             estimator=model, X=X_train, y=y_train, cv=cv_folds, scoring=scoring
         )
         if not all_mode:
             if not isReg:
-                print("Accuracy: {:.2f} %".format(accuracies.mean() * 100))
+                print("        Accuracy: {:.2f} %".format(accuracies.mean() * 100))
             if isReg:
-                print("R2 Score: {:.2f} %".format(accuracies.mean() * 100))
+                print("        R2 Score: {:.2f} %".format(accuracies.mean() * 100))
         model_name = name[predictor]
         accuracy = accuracies.mean() * 100
         if not all_mode:
-            print("Standard Deviation: {:.2f} %".format(accuracies.std() * 100))
-            print("K-Fold Cross Validation [", u"\u2713", "]\n")
+            print(
+                "        Standard Deviation: {:.2f} %".format(accuracies.std() * 100),
+                "\n",
+            )
         return (model_name, accuracy)
 
     except Exception as error:
-        print("K-Fold Cross Validation failed with error: ", error, "\n")
+        print(Fore.RED + "K-Fold Cross Validation failed with error: ", error, "\n")

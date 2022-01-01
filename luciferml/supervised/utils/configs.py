@@ -26,7 +26,7 @@ classifiers = {
     "lgbm": "LightGBM Classifier",
     "cat": "CatBoost Classifier",
     "xgb": "XGBoost Classifier",
-    "ann": "Artificial Neural Network",
+    "ann": "Multi Layer Perceptron Classifier",
 }
 
 regressors = {
@@ -96,5 +96,4 @@ params_use_warning = (
 )
 
 unsupported_pred_warning = """Predictor not available. Please use the predictor which is supported by LuciferML.
-Please check the documentation for more details.\n
-"""
+Check the documentation for more details.\nConflicting Predictor is : {}"""

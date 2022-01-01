@@ -16,7 +16,7 @@ Parameters:
         predictor : str
                 Predicting model to be used
                 Default 'lin'
-                Predictor Strings:
+                Available Predictors:
                         lin  - Linear Regression
                         sgd  - Stochastic Gradient Descent Regressor
                         elas - Elastic Net Regressor

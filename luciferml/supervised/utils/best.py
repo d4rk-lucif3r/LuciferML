@@ -1,3 +1,6 @@
+from colorama import Fore
+
+
 class Best:
     """
     Best is used to utilise the best model when predictor = 'all' is used.
@@ -25,16 +28,16 @@ class Best:
     def summary(self):
         """Returns a summary of the best model"""
         print("\nBest Model Summary:")
-        print("Name: ", self.name)
+        print(Fore.CYAN + "Name: ", self.name)
         if self.isReg:
-            print("R2 Score: ", self.r2_score)
-            print("Mean Absolute Error: ", self.mae)
-            print("Root Mean Squared Error: ", self.rmse)
+            print(Fore.CYAN + "R2 Score: ", self.r2_score)
+            print(Fore.CYAN + "Mean Absolute Error: ", self.mae)
+            print(Fore.CYAN + "Root Mean Squared Error: ", self.rmse)
         else:
-            print("Accuracy: ", self.accuracy)
-        print("KFold Accuracy: ", self.kfold_acc)
-        print("Best Parameters: ", self.best_params)
-        print("Best Accuracy: ", self.best_accuracy)
+            print(Fore.CYAN + "Accuracy: ", self.accuracy)
+        print(Fore.CYAN + "KFold Accuracy: ", self.kfold_acc)
+        print(Fore.CYAN + "Best Parameters: ", self.best_params)
+        print(Fore.CYAN + "Best Accuracy: ", self.best_accuracy)
         print("\n")
 
     def predict(self, pred):

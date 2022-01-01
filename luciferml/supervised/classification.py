@@ -16,12 +16,13 @@ from luciferml.supervised.utils.tuner.luciferml_tuner import luciferml_tuner
 from luciferml.supervised.utils.validator import *
 from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.metrics import accuracy_score
+from colorama import Fore
 
 
 class Classification:
     def __init__(
         self,
-        predictor="lr",
+        predictor=["lr"],
         params={},
         tune=False,
         test_size=0.2,
@@ -57,34 +58,34 @@ class Classification:
         Applies HyperParam Tuning and gives best params and accuracy.\n
 
         Parameters:
-        
+
             features : array
                         features array
             lables : array
                         labels array
-            predictor : str
+            predictor : list
                         Predicting model to be used
-                        Default 'lr'
-                            Predictor Strings:
-                                lr - Logisitic Regression
-                                sgd - Stochastic Gradient Descent Classifier
-                                perc - Perceptron
-                                pass - Passive Aggressive Classifier
-                                ridg - Ridge Classifier
-                                svm -SupportVector Machine
-                                knn - K-Nearest Neighbours
-                                dt - Decision Trees
-                                nb - GaussianNaive bayes
-                                rfc- Random Forest self.Classifier
-                                gbc - Gradient Boosting Classifier
-                                ada - AdaBoost Classifier
-                                bag - Bagging Classifier
-                                extc - Extra Trees Classifier
-                                lgbm - LightGBM Classifier
-                                cat - CatBoost Classifier
-                                xgb- XGBoost self.Classifier
-                                ann - MultiLayer Perceptron Classifier
-                                all - Applies all above classifiers
+                        Default ['lr']  - Logistic Regression\n
+                        Available Predictors:
+                                lr - Logisitic Regression\n
+                                sgd - Stochastic Gradient Descent Classifier\n
+                                perc - Perceptron\n
+                                pass - Passive Aggressive Classifier\n
+                                ridg - Ridge Classifier\n
+                                svm -SupportVector Machine\n
+                                knn - K-Nearest Neighbours\n
+                                nb - GaussianNaive bayes\n
+                                rfc- Random Forest self.Classifier\n
+                                gbc - Gradient Boosting Classifier\n
+                                ada - AdaBoost Classifier\n
+                                bag - Bagging Classifier\n
+                                extc - Extra Trees Classifier\n
+                                lgbm - LightGBM Classifier\n
+                                cat - CatBoost Classifier\n
+                                xgb- XGBoost self.Classifier\n
+                                ann - MultiLayer Perceptron Classifier\n
+                                all - Applies all above classifiers\n
+                                
             params : dict
                         contains parameters for model
             tune : boolean
@@ -110,12 +111,6 @@ class Classification:
             loss : str
                     loss method for ann. Default = 'binary_crossentropy'
                     rate for dropout layer. Default = 0
-            tune_mode : int
-                    HyperParam tune modes. Default = 1
-                        Available Modes:
-                            1 : Basic Tune
-                            2 : Intermediate Tune
-                            3 : Extreme Tune (Can Take Much Time)
             smote : str,
                 Whether to apply SMOTE. Default = 'y'
             k_neighbors : int
@@ -144,7 +139,9 @@ class Classification:
                 Objective for lgbm classifier. Default = 'binary'
 
         Returns:
+
             Dict Containing Name of Classifiers, Its K-Fold Cross Validated Accuracy and Prediction set
+
             Dataframe containing all the models and their accuracies when predictor is 'all'
 
         Example:
@@ -165,9 +162,13 @@ class Classification:
 
         """
         self.preprocess = PreProcesser()
-        self.predictor = predictor
-        if not pred_check(predictor, type="classification"):
-            raise ValueError(unsupported_pred_warning)
+        if type(predictor) == list:
+            self.predictor = predictor[0] if len(predictor) == 1 else predictor
+        else:
+            self.predictor = predictor
+        bool_pred, pred = pred_check(predictor, pred_type="classification")
+        if not bool_pred:
+            raise ValueError(unsupported_pred_warning.format(pred))
         self.original_predictor = predictor
         self.params = params
         self.tune = tune
@@ -214,17 +215,17 @@ class Classification:
         self.classifiers = copy.deepcopy(classifiers)
         for i in self.exclude_models:
             self.classifiers.pop(i)
-        self.result_df["Name"] = list(self.classifiers.values())
         self.best_classifier = "First Run the Predictor in All mode"
         self.objective = None
         self.pred_mode = ""
+        self.model_to_predict = []
 
         if path != None:
             try:
                 self.classifier, self.sc = self.__load(path)
             except Exception as e:
-                print(e)
-                print("Model not found")
+                print(Fore.RED + e)
+                print(Fore.RED + "Model not found")
         if not self.verbose:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -245,30 +246,28 @@ class Classification:
         # Time Function ---------------------------------------------------------------------
 
         self.start = time.time()
-        print(intro, "\n")
-        print("Started LuciferML \n")
+        print(Fore.LIGHTBLACK_EX + intro, "\n")
+        print(Fore.GREEN + "Started LuciferML [", "\u2713", "]\n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
             if not isinstance(self.features, pd.DataFrame) and not isinstance(
                 self.labels, pd.Series
             ):
                 print(
-                    "TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n"
+                    Fore.RED
+                    + "TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n"
                 )
                 self.end = time.time()
                 print(self.end - self.start)
                 return
 
-            # Encoding ---------------------------------------------------------------------
-
+            print(Fore.YELLOW + "Preprocessing Started [*]\n")
             self.features, self.labels = self.preprocess.encoder(
                 self.features, self.labels
             )
 
-            # Sparse Check -------------------------------------------------------------
             self.features, self.labels = sparse_check(self.features, self.labels)
 
-            # Preprocessing ---------------------------------------------------------------------
             (
                 self.X_train,
                 self.X_val,
@@ -284,7 +283,6 @@ class Classification:
                 self.k_neighbors,
             )
 
-            # Dimensionality Reduction---------------------------------------------------------------------
             self.X_train, self.X_val = self.preprocess.dimensionality_reduction(
                 self.lda,
                 self.pca,
@@ -297,9 +295,18 @@ class Classification:
                 self.start,
             )
 
-        # Models ---------------------------------------------------------------------
-        if self.original_predictor == "all":
-            self.pred_mode = "all"
+        print(Fore.GREEN + "Preprocessing Done [", "\u2713", "]\n")
+
+        if self.original_predictor == "all" or type(self.predictor) == list:
+            self.model_to_predict = (
+                self.predictor if type(self.predictor) == list else [self.classifiers]
+            )
+            self.result_df["Name"] = (
+                list(self.classifiers.values())
+                if not type(self.predictor) == list
+                else list(self.classifiers[i] for i in self.predictor)
+            )
+            self.pred_mode = "all" if len(self.predictor) > 1 else "single"
             self.__fitall()
             return
 
@@ -314,57 +321,47 @@ class Classification:
             verbose=self.verbose,
             lgbm_objective=self.lgbm_objective,
         )
-
         try:
             self.classifier.fit(self.X_train, self.y_train)
         except Exception as error:
-            print("Model Train Failed with error: ", error, "\n")
+            print(Fore.RED + "Model Train Failed with error: ", error, "\n")
+        finally:
+            print(Fore.GREEN + "Model Trained Successfully [", "\u2713", "]\n")
 
-        print("Model Training Done [", u"\u2713", "]\n")
-        print("Predicting Data [*]\n")
         try:
+            print(Fore.YELLOW + "Evaluating Model Performance [*]\n")
             self.y_pred = self.classifier.predict(self.X_val)
-            print("Data Prediction Done [", u"\u2713", "]\n")
             if self.predictor == "ann":
                 self.y_pred = (self.y_pred > 0.5).astype("int32")
-        except Exception as error:
-            print("Prediction Failed with error: ", error, "\n")
-
-        # Confusion Matrix --------------------------------------------------------------
-        self.preprocess.confusion_matrix(self.y_pred, self.y_val)
-
-        # Accuracy ---------------------------------------------------------------------
-        print("""Evaluating Model Performance [*]""")
-        try:
             self.accuracy = accuracy_score(self.y_val, self.y_pred)
-            print("Validation Accuracy is :", self.accuracy * 100)
-            print("Evaluating Model Performance [", u"\u2713", "]\n")
+            print(Fore.CYAN + "        Validation Accuracy is :", self.accuracy * 100)
+            self.classifier_name, self.kfold_accuracy = kfold(
+                self.classifier,
+                self.predictor,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+            )
+            self.preprocess.confusion_matrix(self.y_pred, self.y_val)
         except Exception as error:
-            print("Model Evaluation Failed with error: ", error, "\n")
+            print(Fore.RED + "Prediction Failed with error: ", error, "\n")
+        finally:
+            print(Fore.GREEN + "Model Evaluation Completed [", "\u2713", "]\n")
 
-        # K-Fold ---------------------------------------------------------------------
-        self.classifier_name, self.kfold_accuracy = kfold(
-            self.classifier,
-            self.predictor,
-            self.X_train,
-            self.y_train,
-            self.cv_folds,
-        )
-
-        # GridSearch ---------------------------------------------------------------------
         if not self.predictor == "nb" and self.tune:
             self.__tuner()
 
-        print("Complete [", u"\u2713", "]\n")
+        print(Fore.GREEN + "Completed LuciferML Run [", "\u2713", "]\n")
         self.end = time.time()
-        print("Time Elapsed : ", self.end - self.start, "seconds \n")
+        final_time = self.end - self.start
+        print(Fore.BLUE + "Time Elapsed : ", f"{final_time:.2f}", "seconds \n")
 
     def __fitall(self):
-        print("Training All Classifiers [*]\n")
+        print(Fore.YELLOW + "Training LuciferML [*]\n")
         if self.params != {}:
             warnings.warn(params_use_warning, UserWarning)
             self.params = {}
-        for _, self.predictor in enumerate(self.classifiers):
+        for _, self.predictor in enumerate(self.model_to_predict):
             if not self.predictor in self.exclude_models:
                 self.classifier, self.objective = classification_predictor(
                     self.predictor,
@@ -374,7 +371,7 @@ class Classification:
                     self.cv_folds,
                     self.random_state,
                     self.metric,
-                    all_mode=True,
+                    mode="multi",
                     verbose=self.verbose,
                     lgbm_objective=self.lgbm_objective,
                 )
@@ -384,27 +381,27 @@ class Classification:
                         self.classifier.fit(self.X_train, self.y_train)
                 except Exception as error:
                     print(
-                        classifiers[self.predictor],
+                        Fore.RED + classifiers[self.predictor],
                         "Model Train Failed with error: ",
                         error,
                         "\n",
                     )
                 try:
                     self.y_pred = self.classifier.predict(self.X_val)
-                except Exception as error:
-                    print(
-                        classifiers[self.predictor],
-                        "Data Prediction Failed with error: ",
-                        error,
-                        "\n",
-                    )
-                if self.predictor == "ann":
-                    self.y_pred = (self.y_pred > 0.5).astype("int32")
-
-                # Accuracy ---------------------------------------------------------------------
-                try:
+                    if self.predictor == "ann":
+                        self.y_pred = (self.y_pred > 0.5).astype("int32")
                     self.accuracy = accuracy_score(self.y_val, self.y_pred)
                     self.acc.append(self.accuracy * 100)
+                    self.classifier_name, self.kfold_accuracy = kfold(
+                        self.classifier,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                    )
+                    self.kfoldacc.append(self.kfold_accuracy)
+                    self.classifier_model.append(self.classifier)
                 except Exception as error:
                     print(
                         classifiers[self.predictor],
@@ -412,24 +409,9 @@ class Classification:
                         error,
                         "\n",
                     )
+                if self.tune:
+                    self.__tuner(all_mode=True, single_mode=False)
 
-                # K-Fold ---------------------------------------------------------------------
-                self.classifier_name, self.kfold_accuracy = kfold(
-                    self.classifier,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                )
-                self.kfoldacc.append(self.kfold_accuracy)
-                self.classifier_model.append(self.classifier)
-                # GridSearch ---------------------------------------------------------------------
-                if not self.predictor == "nb" and self.tune:
-                    self.__tuner(all_mode=True)
-                if self.predictor == "nb":
-                    self.best_params = ""
-                    self.best_accuracy = self.kfold_accuracy
         self.result_df["Accuracy"] = self.acc
         self.result_df["KFold Accuracy"] = self.kfoldacc
         self.result_df["Model"] = self.classifier_model
@@ -444,44 +426,55 @@ class Classification:
             self.best_classifier = Best(
                 self.result_df.loc[self.result_df["KFold Accuracy"].idxmax()], self.tune
             )
-        self.best_classifier_path, self.scaler_path = self.save(
-            best=True, model=self.best_classifier.model, scaler=self.sc
-        )
-        print("Training All Classifiers Done [", u"\u2713", "]\n")
-        print(
-            "Saved Best Model to {} and its scaler to {}".format(
-                self.best_classifier_path, self.scaler_path
-            ),
-            "\n",
-        )
+        print(Fore.GREEN + "Training Done [", "\u2713", "]\n")
+        print(Fore.CYAN + "Results Below\n")
         display(self.result_df)
-        print("Complete [", u"\u2713", "]\n")
+        print(Fore.GREEN + "\nCompleted LuciferML Run [", "\u2713", "]\n")
+        if len(self.model_to_predict) > 1:
+            self.best_classifier_path, self.scaler_path = self.save(
+                best=True, model=self.best_classifier.model, scaler=self.sc
+            )
+            print(
+                Fore.CYAN
+                + "Saved Best Model to {} and its scaler to {}".format(
+                    self.best_classifier_path, self.scaler_path
+                ),
+                "\n",
+            )
         self.end = time.time()
-        print("Time Elapsed : ", self.end - self.start, "seconds \n")
+        final_time = self.end - self.start
+        print(Fore.BLUE + "Time Elapsed : ", f"{final_time:.2f}", "seconds \n")
         return
 
-    def __tuner(self, all_mode=False):
+    def __tuner(self, all_mode=False, single_mode=False):
         if not all_mode:
-            print("HyperParam Tuning Started [*]\n")
-        self.best_params, self.best_accuracy, self.best_trained_model = luciferml_tuner(
-            self.predictor,
-            self.objective,
-            self.n_trials,
-            self.sampler,
-            self.direction,
-            self.X_train,
-            self.y_train,
-            self.cv_folds,
-            self.random_state,
-            self.metric,
-            all_mode=all_mode,
-        )
-
+            print(Fore.YELLOW + "Tuning Started [*]\n")
+        if not self.predictor == "nb":
+            (
+                self.best_params,
+                self.best_accuracy,
+                self.best_trained_model,
+            ) = luciferml_tuner(
+                self.predictor,
+                self.objective,
+                self.n_trials,
+                self.sampler,
+                self.direction,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+                self.random_state,
+                self.metric,
+                all_mode=all_mode,
+            )
+        if self.predictor == "nb":
+            self.best_params = "Not Applicable"
+            self.best_accuracy = 0
         self.bestparams.append(self.best_params)
         self.bestacc.append(self.best_accuracy * 100)
         self.tuned_trained_model.append(self.best_trained_model)
-        if not all_mode:
-            print("HyperParam Tuning Done [", u"\u2713", "]\n")
+        if not all_mode or single_mode:
+            print(Fore.GREEN + "Tuning Done [", "\u2713", "]\n")
 
     def result(self):
         """[Makes a dictionary containing Classifier Name, K-Fold CV Accuracy, RMSE, Prediction set.]
@@ -525,7 +518,7 @@ class Classification:
         if self.pred_mode == "all":
             raise TypeError("Predict is only applicable on single predictor")
 
-    def save(self, path=None, **kwargs):
+    def save(self, path=None, best=False, **kwargs):
         """
         Saves the model and its scaler to a file provided with a path.
         If no path is provided will create a directory named
@@ -539,30 +532,21 @@ class Classification:
         """
         if not type(path) == list and path != None:
             raise TypeError("Path must be a list")
-
+        if self.pred_mode == "all" and best == False:
+            raise TypeError("Cannot save model for all predictors")
         dir_path_model = path[0] if path else "lucifer_ml_info/models/classifier/"
         dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/classifier/"
-        if kwargs.get("best"):
+        model_name = classifiers[self.predictor].replace(" ", "_")
+        if best:
             dir_path_model = "lucifer_ml_info/best/classifier/models/"
             dir_path_scaler = "lucifer_ml_info/best/classifier/scalers/"
+            model_name = self.best_classifier.name.replace(" ", "_")
         os.makedirs(dir_path_model, exist_ok=True)
         os.makedirs(dir_path_scaler, exist_ok=True)
         timestamp = str(int(time.time()))
-        path_model = (
-            dir_path_model
-            + classifiers[self.predictor].replace(" ", "_")
-            + "_"
-            + timestamp
-            + ".pkl"
-        )
+        path_model = dir_path_model + model_name + "_" + timestamp + ".pkl"
         path_scaler = (
-            dir_path_scaler
-            + classifiers[self.predictor].replace(" ", "_")
-            + "_"
-            + "Scaler"
-            + "_"
-            + timestamp
-            + ".pkl"
+            dir_path_scaler + model_name + "_" + "Scaler" + "_" + timestamp + ".pkl"
         )
         if (
             not kwargs.get("model")
@@ -574,7 +558,7 @@ class Classification:
         else:
             dump(kwargs.get("model"), open(path_model, "wb"))
             dump(kwargs.get("scaler"), open(path_scaler, "wb"))
-        if not kwargs.get("best"):
+        if not best:
             print("Model Saved at {} and Scaler at {}".format(path_model, path_scaler))
         return path_model, path_scaler
 
@@ -604,18 +588,19 @@ class Classification:
             model = load(open(model_path, "rb"))
             scaler = load(open(scaler_path, "rb"))
             print(
-                "[Info] Model and Scaler Loaded from {} and {}".format(
+                Fore.GREEN
+                + "[Info] Model and Scaler Loaded from {} and {}".format(
                     model_path, scaler_path
                 )
             )
             return model, scaler
         elif model_path != None and scaler_path == None:
             model = load(open(model_path, "rb"))
-            print("[Info] Model Loaded from {}".format(model_path))
+            print(Fore.GREEN + "[Info] Model Loaded from {}".format(model_path))
             return model
         elif model_path == None and scaler_path != None:
             scaler = load(open(scaler_path, "rb"))
-            print("[Info] Scaler Loaded from {}".format(scaler_path))
+            print(Fore.GREEN + "[Info] Scaler Loaded from {}".format(scaler_path))
             return scaler
         else:
             raise ValueError("No path specified.Please provide actual path\n")

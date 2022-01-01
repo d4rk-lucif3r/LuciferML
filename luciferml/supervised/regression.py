@@ -7,11 +7,12 @@ from pickle import dump, load
 import numpy as np
 import optuna
 import pandas as pd
+from colorama import Fore
 from IPython.display import display
 from luciferml.supervised.utils.best import Best
 from luciferml.supervised.utils.configs import *
-from luciferml.supervised.utils.preprocesser import PreProcesser
 from luciferml.supervised.utils.predictors import regression_predictor
+from luciferml.supervised.utils.preprocesser import PreProcesser
 from luciferml.supervised.utils.tuner.luciferml_tuner import luciferml_tuner
 from luciferml.supervised.utils.validator import *
 from optuna.samplers._tpe.sampler import TPESampler
@@ -21,7 +22,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 class Regression:
     def __init__(
         self,
-        predictor="lin",
+        predictor=["lin"],
         params={},
         tune=False,
         test_size=0.2,
@@ -53,33 +54,33 @@ class Regression:
         Applies HyperParam Tuning and gives best params and accuracy.\n
 
         Parameters:
-        
+
             features : array
                         features array
             lables : array
                         labels array
-            predictor : str
-                    Predicting model to be used
-                    Default 'lin'
-                        Predictor Strings:
-                                lin  - Linear Regression
-                                sgd  - Stochastic Gradient Descent Regressor
-                                elas - Elastic Net Regressor
-                                krr  - Kernel Ridge Regressor
-                                br   - Bayesian Ridge Regressor
-                                svr  - Support Vector Regressor
-                                knr  - K-Nearest Regressor
-                                dt   - Decision Trees
-                                rfr  - Random Forest Regressor
-                                gbr  - Gradient Boost Regressor
-                                ada  - AdaBoost Regressor,
-                                bag  - Bagging Regressor,
-                                extr - Extra Trees Regressor,
-                                lgbm - LightGB Regressor
-                                xgb  - XGBoost Regressor
-                                cat  - Catboost Regressor
-                                ann  - Multi Layer Perceptron Regressor
-                                all  - Applies all above regressors
+            predictor : list
+                        Predicting models to be used
+                        Default ['lin'] - 'Linear Regression'\n
+                        Available Predictors:
+                                lin  - Linear Regression\n
+                                sgd  - Stochastic Gradient Descent Regressor\n
+                                elas - Elastic Net Regressor\n
+                                krr  - Kernel Ridge Regressor\n
+                                br   - Bayesian Ridge Regressor\n
+                                svr  - Support Vector Regressor\n
+                                knr  - K-Nearest Regressor\n
+                                dt   - Decision Trees\n
+                                rfr  - Random Forest Regressor\n
+                                gbr  - Gradient Boost Regressor\n
+                                ada  - AdaBoost Regressor,\n
+                                bag  - Bagging Regressor,\n
+                                extr - Extra Trees Regressor,\n
+                                lgbm - LightGB Regressor\n
+                                xgb  - XGBoost Regressor\n
+                                cat  - Catboost Regressor\n
+                                ann  - Multi Layer Perceptron Regressor\n
+                                all  - Applies all above regressors\n
             params : dict
                         contains parameters for model
             tune : boolean
@@ -152,9 +153,13 @@ class Regression:
 
         """
         self.preprocess = PreProcesser()
-        self.predictor = predictor
-        if not pred_check(predictor, type="regression"):
-            raise ValueError(unsupported_pred_warning)
+        if type(predictor) == list:
+            self.predictor = predictor[0] if len(predictor) == 1 else predictor
+        else:
+            self.predictor = predictor
+        bool_pred, pred = pred_check(predictor, pred_type="regression")
+        if not bool_pred:
+            raise ValueError(unsupported_pred_warning.format(pred))
         self.original_predictor = predictor
         self.params = params
         self.tune = tune
@@ -201,17 +206,17 @@ class Regression:
         self.regressors = copy.deepcopy(regressors)
         for i in self.exclude_models:
             self.regressors.pop(i)
-        self.result_df["Name"] = list(self.regressors.values())
         self.best_regressor = "First Run the Predictor in All mode"
         self.objective = None
         self.pred_mode = ""
+        self.model_to_predict = None
 
         if path != None:
             try:
                 self.regressor, self.sc = self.__load(path)
             except Exception as e:
-                print(e)
-                print("Model not found")
+                print(Fore.RED + e)
+                print(Fore.RED + "Model not found")
         if not self.verbose:
             optuna.logging.set_verbosity(optuna.logging.WARNING)
 
@@ -235,30 +240,26 @@ class Regression:
         # Time Function ---------------------------------------------------------------------
 
         self.start = time.time()
-        print(intro, "\n")
-        print("Started Lucifer-ML \n")
+        print(Fore.LIGHTBLACK_EX + intro, "\n")
+        print(Fore.GREEN + "Started LuciferML [", "\u2713", "]\n")
         if not self.rerun:
             # CHECKUP ---------------------------------------------------------------------
             if not isinstance(self.features, pd.DataFrame) and not isinstance(
                 self.labels, pd.Series
             ):
                 print(
-                    "TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n"
+                    Fore.RED
+                    + "TypeError: This Function take features as Pandas Dataframe and labels as Pandas Series. Please check your implementation.\n"
                 )
                 end = time.time()
                 print(self.end - self.start)
                 return
-
-            # Encoding ---------------------------------------------------------------------
+            print(Fore.YELLOW + "Preprocessing Started [*]\n")
 
             self.features, self.labels = self.preprocess.encoder(
                 self.features, self.labels
             )
-
-            # Sparse Check -------------------------------------------------------------
             self.features, self.labels = sparse_check(self.features, self.labels)
-
-            # Preprocessing ---------------------------------------------------------------------
             (
                 self.X_train,
                 self.X_val,
@@ -273,8 +274,6 @@ class Regression:
                 self.smote,
                 self.k_neighbors,
             )
-
-            # Dimensionality Reduction---------------------------------------------------------------------
             self.X_train, self.X_val = self.preprocess.dimensionality_reduction(
                 self.lda,
                 self.pca,
@@ -287,9 +286,18 @@ class Regression:
                 self.start,
             )
 
-        # Models ---------------------------------------------------------------------
-        if self.original_predictor == "all":
-            self.pred_mode = "all"
+        print(Fore.GREEN + "Preprocessing Done [", "\u2713", "]\n")
+
+        if self.original_predictor == "all" or type(self.predictor) == list:
+            self.model_to_predict = (
+                self.predictor if type(self.predictor) == list else [self.regressors]
+            )
+            self.result_df["Name"] = (
+                list(self.regressors.values())
+                if not type(self.predictor) == list
+                else list(self.regressors[i] for i in self.predictor)
+            )
+            self.pred_mode = "all" if len(self.predictor) > 1 else "single"
             self.__fitall()
             return
         self.regressor, self.objective = regression_predictor(
@@ -302,61 +310,60 @@ class Regression:
             self.metric,
             verbose=self.verbose,
         )
-
         try:
             self.regressor.fit(self.X_train, self.y_train)
         except Exception as error:
-            print("Model Train Failed with error: ", error, "\n")
+            print(Fore.RED + "Model Train Failed with error: ", error, "\n")
+        finally:
+            print(Fore.GREEN + "Model Trained Successfully [", "\u2713", "]\n")
 
-        print("Model Training Done [", u"\u2713", "]\n")
-        print("Predicting Data [*]\n")
         try:
+            print(Fore.YELLOW + "Evaluating Model Performance [*]\n")
             self.y_pred = self.regressor.predict(self.X_val)
-            print("Data Prediction Done [", u"\u2713", "]\n")
-        except Exception as error:
-            print("Prediction Failed with error: ", error, "\n")
-
-        # Accuracy ---------------------------------------------------------------------
-        print("""Evaluating Model Performance [*]""")
-        try:
             self.accuracy = r2_score(self.y_val, self.y_pred)
             self.m_absolute_error = mean_absolute_error(self.y_val, self.y_pred)
             self.rm_squared_error = mean_squared_error(
                 self.y_val, self.y_pred, squared=False
             )
-            print("Validation R2 Score is {:.2f} %".format(self.accuracy * 100))
-            print("Validation Mean Absolute Error is :", self.m_absolute_error)
             print(
-                "Validation Root Mean Squared Error is :", self.rm_squared_error, "\n"
+                Fore.CYAN
+                + "        Validation R2 Score is {:.2f} %".format(self.accuracy * 100)
             )
-            print("Evaluating Model Performance [", u"\u2713", "]\n")
+            print(
+                Fore.CYAN + "        Validation Mean Absolute Error is :",
+                self.m_absolute_error,
+            )
+            print(
+                Fore.CYAN + "        Validation Root Mean Squared Error is :",
+                self.rm_squared_error,
+            )
+            self.regressor_name, self.kfold_accuracy = kfold(
+                self.regressor,
+                self.predictor,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+                isReg=True,
+            )
         except Exception as error:
-            print("Model Evaluation Failed with error: ", error, "\n")
+            print(Fore.RED + "Model Evaluation Failed with error: ", error, "\n")
+        finally:
+            print(Fore.GREEN + "Model Evaluation Completed [", "\u2713", "]\n")
 
-        # K-Fold ---------------------------------------------------------------------
-        self.regressor_name, self.kfold_accuracy = kfold(
-            self.regressor,
-            self.predictor,
-            self.X_train,
-            self.y_train,
-            self.cv_folds,
-            isReg=True,
-        )
-
-        # GridSearch ---------------------------------------------------------------------
         if not self.predictor == "nb" and self.tune:
             self.__tuner()
 
-        print("Complete [", u"\u2713", "]\n")
+        print(Fore.GREEN + "Completed LuciferML Run [", "\u2713", "]\n")
         self.end = time.time()
-        print("Time Elapsed : ", self.end - self.start, "seconds \n")
+        final_time = self.end - self.start
+        print(Fore.BLUE + "Time Elapsed : ", f"{final_time:.2f}", "seconds \n")
 
     def __fitall(self):
-        print("Training All Regressors [*]\n")
+        print(Fore.YELLOW + "Training LuciferML [*]\n")
         if self.params != {}:
             warnings.warn(params_use_warning, UserWarning)
             self.params = {}
-        for _, self.predictor in enumerate(self.regressors):
+        for _, self.predictor in enumerate(self.model_to_predict):
             if not self.predictor in self.exclude_models:
                 (self.regressor, self.objective,) = regression_predictor(
                     self.predictor,
@@ -366,29 +373,20 @@ class Regression:
                     self.cv_folds,
                     self.random_state,
                     self.metric,
-                    all_mode=True,
+                    mode="multi",
                     verbose=self.verbose,
                 )
                 try:
                     self.regressor.fit(self.X_train, self.y_train)
                 except Exception as error:
                     print(
-                        regressors[self.predictor],
+                        Fore.RED + regressors[self.predictor],
                         "Model Train Failed with error: ",
                         error,
                         "\n",
                     )
                 try:
                     self.y_pred = self.regressor.predict(self.X_val)
-                except Exception as error:
-                    print(
-                        regressors[self.predictor],
-                        "Data Prediction Failed with error: ",
-                        error,
-                        "\n",
-                    )
-                # Accuracy ---------------------------------------------------------------------
-                try:
                     self.accuracy = r2_score(self.y_val, self.y_pred)
                     self.m_absolute_error = mean_absolute_error(self.y_val, self.y_pred)
                     self.rm_squared_error = mean_squared_error(
@@ -397,29 +395,27 @@ class Regression:
                     self.acc.append(self.accuracy * 100)
                     self.rmse.append(self.rm_squared_error)
                     self.mae.append(self.m_absolute_error)
+                    self.regressor_name, self.kfold_accuracy = kfold(
+                        self.regressor,
+                        self.predictor,
+                        self.X_train,
+                        self.y_train,
+                        self.cv_folds,
+                        all_mode=True,
+                        isReg=True,
+                    )
+                    self.kfoldacc.append(self.kfold_accuracy)
+                    self.regressor_model.append(self.regressor)
                 except Exception as error:
                     print(
-                        regressors[self.predictor],
+                        Fore.RED + regressors[self.predictor],
                         "Evaluation Failed with error: ",
                         error,
                         "\n",
                     )
 
-                # K-Fold ---------------------------------------------------------------------
-                self.regressor_name, self.kfold_accuracy = kfold(
-                    self.regressor,
-                    self.predictor,
-                    self.X_train,
-                    self.y_train,
-                    self.cv_folds,
-                    all_mode=True,
-                    isReg=True,
-                )
-                self.kfoldacc.append(self.kfold_accuracy)
-                self.regressor_model.append(self.regressor)
-                # GridSearch ---------------------------------------------------------------------
-                if not self.predictor == "nb" and self.tune:
-                    self.__tuner(all_mode=True)
+                if self.tune:
+                    self.__tuner(all_mode=True, single_mode=False)
                 if self.predictor == "nb":
                     self.best_params = ""
                     self.best_accuracy = self.kfold_accuracy
@@ -429,7 +425,7 @@ class Regression:
         self.result_df["KFold Accuracy"] = self.kfoldacc
         self.result_df["Model"] = self.regressor_model
 
-        if self.tune == True:
+        if self.tune:
             self.result_df["Best Parameters"] = self.bestparams
             self.result_df["Best Accuracy"] = self.bestacc
             self.result_df["Trained Model"] = self.tuned_trained_model
@@ -444,44 +440,56 @@ class Regression:
                 self.tune,
                 isReg=True,
             )
-        self.best_regressor_path, self.scaler_path = self.save(
-            best=True, model=self.best_regressor.model, scaler=self.sc
-        )
-        print("Training All Regressors Done [", u"\u2713", "]\n")
-        print(
-            "Saved Best Model to {} and its scaler to {}".format(
-                self.best_regressor_path, self.scaler_path
-            ),
-            "\n",
-        )
+        print(Fore.GREEN + "Training Done [", "\u2713", "]\n")
+        print(Fore.CYAN + "Results Below\n")
         display(self.result_df)
-        print("Complete [", u"\u2713", "]\n")
+        print(Fore.GREEN + "\nCompleted LuciferML Run [", "\u2713", "]\n")
+        if len(self.model_to_predict) > 1:
+            self.best_regressor_path, self.scaler_path = self.save(
+                best=True, model=self.best_regressor.model, scaler=self.sc
+            )
+            print(
+                Fore.CYAN
+                + "Saved Best Model to {} and its scaler to {}".format(
+                    self.best_regressor_path, self.scaler_path
+                ),
+                "\n",
+            )
         self.end = time.time()
-        print("Time Elapsed : ", self.end - self.start, "seconds \n")
+        final_time = self.end - self.start
+        print(Fore.BLUE + "Time Elapsed : ", f"{final_time:.2f}", "seconds \n")
         return
 
-    def __tuner(self, all_mode=False):
-        if not all_mode:
-            print("HyperParam Tuning Started [*]\n")
-        self.best_params, self.best_accuracy, self.best_trained_model = luciferml_tuner(
-            self.predictor,
-            self.objective,
-            self.n_trials,
-            self.sampler,
-            self.direction,
-            self.X_train,
-            self.y_train,
-            self.cv_folds,
-            self.random_state,
-            self.metric,
-            all_mode=all_mode,
-            isReg=True,
-        )
+    def __tuner(self, all_mode=False, single_mode=True):
+        if not all_mode or single_mode:
+            print(Fore.YELLOW + "Tuning Started [*]\n")
+        if not self.predictor == "nb":
+            (
+                self.best_params,
+                self.best_accuracy,
+                self.best_trained_model,
+            ) = luciferml_tuner(
+                self.predictor,
+                self.objective,
+                self.n_trials,
+                self.sampler,
+                self.direction,
+                self.X_train,
+                self.y_train,
+                self.cv_folds,
+                self.random_state,
+                self.metric,
+                all_mode=all_mode,
+                isReg=True,
+            )
+        if self.predictor == "nb":
+            self.best_params = "Not Applicable"
+            self.best_accuracy = 0
         self.bestparams.append(self.best_params)
         self.bestacc.append(self.best_accuracy * 100)
         self.tuned_trained_model.append(self.best_trained_model)
-        if not all_mode:
-            print("HyperParam Tuning Done [", u"\u2713", "]\n")
+        if not all_mode or single_mode:
+            print(Fore.GREEN + "Tuning Done [", "\u2713", "]\n")
 
     def result(self):
         """[Makes a dictionary containing Regressor Name, K-Fold CV Accuracy, RMSE, Prediction set.]
@@ -528,7 +536,7 @@ class Regression:
         if self.pred_mode == "all":
             raise TypeError("Predict is only applicable on single predictor")
 
-    def save(self, path=None, **kwargs):
+    def save(self, path=None, best=False, **kwargs):
         """
         Saves the model and its scaler to a file provided with a path.
         If no path is provided will create a directory named
@@ -545,29 +553,21 @@ class Regression:
         """
         if not type(path) == list and path != None:
             raise TypeError("Path must be a list")
+        if self.pred_mode == "all" and best == False:
+            raise TypeError("Cannot save model for all predictors")
         dir_path_model = path[0] if path else "lucifer_ml_info/models/regression/"
         dir_path_scaler = path[1] if path else "lucifer_ml_info/scalers/regression/"
-        if kwargs.get("best"):
+        model_name = regressors[self.predictor].replace(" ", "_")
+        if best:
             dir_path_model = "lucifer_ml_info/best/regression/models/"
             dir_path_scaler = "lucifer_ml_info/best/regression/scalers/"
+            model_name = self.best_regressor.name.replace(" ", "_")
         os.makedirs(dir_path_model, exist_ok=True)
         os.makedirs(dir_path_scaler, exist_ok=True)
         timestamp = str(int(time.time()))
-        path_model = (
-            dir_path_model
-            + regressors[self.predictor].replace(" ", "_")
-            + "_"
-            + timestamp
-            + ".pkl"
-        )
+        path_model = dir_path_model + model_name + "_" + timestamp + ".pkl"
         path_scaler = (
-            dir_path_scaler
-            + regressors[self.predictor].replace(" ", "_")
-            + "_"
-            + "Scaler"
-            + "_"
-            + timestamp
-            + ".pkl"
+            dir_path_scaler + model_name + "_" + "Scaler" + "_" + timestamp + ".pkl"
         )
         if (
             not kwargs.get("model")
@@ -579,7 +579,7 @@ class Regression:
         else:
             dump(kwargs.get("model"), open(path_model, "wb"))
             dump(kwargs.get("scaler"), open(path_scaler, "wb"))
-        if not kwargs.get("best"):
+        if not best:
             print("Model Saved at {} and Scaler at {}".format(path_model, path_scaler))
         return path_model, path_scaler
 
@@ -610,18 +610,19 @@ class Regression:
             model = load(open(model_path, "rb"))
             scaler = load(open(scaler_path, "rb"))
             print(
-                "[Info] Model and Scaler Loaded from {} and {}".format(
+                Fore.GREEN
+                + "[Info] Model and Scaler Loaded from {} and {}".format(
                     model_path, scaler_path
                 )
             )
             return model, scaler
         elif model_path != None and scaler_path == None:
             model = load(open(model_path, "rb"))
-            print("[Info] Model Loaded from {}".format(model_path))
+            print(Fore.GREEN + "[Info] Model Loaded from {}".format(model_path))
             return model
         elif model_path == None and scaler_path != None:
             scaler = load(open(scaler_path, "rb"))
-            print("[Info] Scaler Loaded from {}".format(scaler_path))
+            print(Fore.GREEN + "[Info] Scaler Loaded from {}".format(scaler_path))
             return scaler
         else:
             raise ValueError("No path specified.Please provide actual path\n")

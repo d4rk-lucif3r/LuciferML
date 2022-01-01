@@ -81,7 +81,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         dataset = pd.read_csv('Social_Network_Ads.csv')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        classifier = Classification(predictor = 'lr')
+        classifier = Classification(predictor = ['lr'])
         classifier.fit(X, y)
         result = classifier.result()
 
@@ -116,7 +116,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
         X = dataset.iloc[:, :-1]
         y = dataset.iloc[:, -1]
-        regressor = Regression(predictor = 'lin')
+        regressor = Regression(predictor = ['lin'])
         regressor.fit(X, y)
         result = regressor.result()
 

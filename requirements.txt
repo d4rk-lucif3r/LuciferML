@@ -11,3 +11,4 @@ catboost
 lightgbm
 optuna
 shap
+colorama

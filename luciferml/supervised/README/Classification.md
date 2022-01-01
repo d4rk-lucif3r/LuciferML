@@ -12,10 +12,10 @@ Parameters:
                 features array
         lables : array
                 labels array
-        predictor : str
+        predictor : list
                 Predicting model to be used
-                Default 'lr'
-                        Predictor Strings:
+                Default ['lr']
+                Available Predictors:
                         lr - Logisitic Regression
                         sgd - Stochastic Gradient Descent Classifier
                         perc - Perceptron
@@ -35,6 +35,7 @@ Parameters:
                         xgb- XGBoost self.Classifier
                         ann - Multi Layer Perceptron Classifier
                         all - Applies all above classifiers
+
         params : dict
                 contains parameters for model
         tune : boolean

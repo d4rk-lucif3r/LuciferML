@@ -3,6 +3,7 @@ import traceback
 from luciferml.supervised.utils.predictors import classification_predictor
 from luciferml.supervised.utils.predictors import regression_predictor
 from luciferml.supervised.utils.tuner.optuna.optuna_base import Tuner
+from colorama import Fore
 
 
 def luciferml_tuner(
@@ -35,7 +36,7 @@ def luciferml_tuner(
                 cv_folds,
                 random_state,
                 metric,
-                all_mode=all_mode,
+                mode="tune",
                 verbose=verbose,
             )
         if not isReg:
@@ -47,13 +48,13 @@ def luciferml_tuner(
                 cv_folds,
                 random_state,
                 metric,
-                all_mode=all_mode,
+                mode="tune",
                 verbose=verbose,
             )
         if not all_mode:
-            print("Best Params: ", best_params)
-            print("Best Score: ", best_score * 100, "\n")
+            print(Fore.CYAN + "        Best Params: ", best_params)
+            print(Fore.CYAN + "        Best Score: ", best_score * 100, "\n")
         return best_params, best_score, model
     except Exception as error:
-        print("HyperParam Tuning Failed with Error: ", error, "\n")
+        print(Fore.RED + "HyperParam Tuning Failed with Error: ", error, "\n")
         traceback.print_exc()
