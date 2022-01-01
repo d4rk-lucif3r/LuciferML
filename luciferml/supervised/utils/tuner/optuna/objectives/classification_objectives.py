@@ -434,7 +434,7 @@ class ClassificationObjectives:
                 "learning_rate", ["constant", "invscaling", "adaptive"]
             ),
             "learning_rate_init": trial.suggest_uniform("learning_rate_init", 0, 1),
-            "max_iter": trial.suggest_int("max_iter", 1, 100),
+            "max_iter": trial.suggest_int("max_iter", 1, 2000),
             "random_state": self.random_state,
         }
         clf = MLPClassifier(**param)

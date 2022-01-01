@@ -361,7 +361,7 @@ class RegressionObjectives:
             "learning_rate": trial.suggest_categorical(
                 "learning_rate", ["constant", "adaptive"]
             ),
-            "max_iter": trial.suggest_int("max_iter", 10, 1000),
+            "max_iter": trial.suggest_int("max_iter", 1, 2000),
             "random_state": self.random_state,
             "verbose": 0,
             "early_stopping": True,
