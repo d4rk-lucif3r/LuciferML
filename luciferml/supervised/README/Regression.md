@@ -8,6 +8,7 @@ and stores its accuracies in a dictionary containing Model name as Key and accur
 Applies HyperParam Tuning and gives best params and accuracy.
 
 Parameters:
+
         features : array
                 features array
         lables : array
