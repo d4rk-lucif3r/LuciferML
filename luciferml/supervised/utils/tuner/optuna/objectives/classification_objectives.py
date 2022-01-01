@@ -78,7 +78,6 @@ class ClassificationObjectives:
         param = {
             "alpha": trial.suggest_loguniform("alpha", 1e-5, 1e5),
             "fit_intercept": trial.suggest_categorical("fit_intercept", [True, False]),
-            "normalize": trial.suggest_categorical("normalize", [True, False]),
             "max_iter": trial.suggest_int("max_iter", 1, 1000),
             "tol": trial.suggest_loguniform("tol", 1e-5, 1e-2),
             "random_state": self.random_state,

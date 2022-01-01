@@ -11,6 +11,7 @@ class Best:
         self.__best_model = best_model
         self.model = self.__best_model["Model"]
         self.name = self.__best_model["Name"]
+        self.tune = tune
         if isReg:
             self.r2_score = self.__best_model["R2 Score"]
             self.mae = self.__best_model["Mean Absolute Error"]
@@ -36,8 +37,9 @@ class Best:
         else:
             print(Fore.CYAN + "Accuracy: ", self.accuracy)
         print(Fore.CYAN + "KFold Accuracy: ", self.kfold_acc)
-        print(Fore.CYAN + "Best Parameters: ", self.best_params)
-        print(Fore.CYAN + "Best Accuracy: ", self.best_accuracy)
+        if self.tune:
+            print(Fore.CYAN + "Best Parameters: ", self.best_params)
+            print(Fore.CYAN + "Best Accuracy: ", self.best_accuracy)
         print("\n")
 
     def predict(self, pred):
