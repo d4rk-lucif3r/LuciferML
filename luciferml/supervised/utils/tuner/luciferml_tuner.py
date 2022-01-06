@@ -57,4 +57,4 @@ def luciferml_tuner(
         return best_params, best_score, model
     except Exception as error:
         print(Fore.RED + "HyperParam Tuning Failed with Error: ", error, "\n")
-        traceback.print_exc()
+        return None, 0, None

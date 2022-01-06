@@ -54,7 +54,7 @@ def kfold(model, predictor, X_train, y_train, cv_folds, isReg=False, all_mode=Fa
         )
         if not all_mode:
             if not isReg:
-                print("        Accuracy: {:.2f} %".format(accuracies.mean() * 100))
+                print("        KFold Accuracy: {:.2f} %".format(accuracies.mean() * 100))
             if isReg:
                 print("        R2 Score: {:.2f} %".format(accuracies.mean() * 100))
         model_name = name[predictor]

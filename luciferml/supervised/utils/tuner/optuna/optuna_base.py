@@ -9,7 +9,7 @@ class Tuner:
 
     def tune(self, objective):
         study = optuna.create_study(direction=self.direction, sampler=self.sampler)
-        study.optimize(objective, n_trials=self.n_trials)
+        study.optimize(objective, n_trials=self.n_trials, n_jobs=-1, gc_after_trial=True)
         params = study.best_params
         best_score = study.best_value
         return params, best_score

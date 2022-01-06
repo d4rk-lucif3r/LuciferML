@@ -45,7 +45,7 @@ class Classification:
         verbose=False,
         exclude_models=[],
         path=None,
-        optuna_sampler=TPESampler(),
+        optuna_sampler=TPESampler(multivariate=True),
         optuna_direction="maximize",
         optuna_n_trials=100,
         optuna_metric="accuracy",
@@ -343,7 +343,7 @@ class Classification:
             if self.predictor == "ann":
                 self.y_pred = (self.y_pred > 0.5).astype("int32")
             self.accuracy = accuracy_score(self.y_val, self.y_pred)
-            print(Fore.CYAN + "        Validation Accuracy is :", self.accuracy * 100)
+            print(Fore.CYAN + "        Validation Accuracy is : {:.2f} %".format(self.accuracy * 100))
             self.classifier_name, self.kfold_accuracy = kfold(
                 self.classifier,
                 self.predictor,

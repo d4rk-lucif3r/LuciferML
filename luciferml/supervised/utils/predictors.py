@@ -1,3 +1,4 @@
+from tkinter import N
 from catboost import CatBoostClassifier, CatBoostRegressor
 from colorama import Fore
 from lightgbm import LGBMClassifier, LGBMRegressor
@@ -191,7 +192,13 @@ def classification_predictor(
         elif predictor == "xgb":
             if mode == "single":
                 print(Fore.YELLOW + "Training XGBClassifier on Training Set [*]\n")
+            if verbose:
+                params["verbosity"] = 2
+            if not verbose:
+                params["verbosity"] = 0
+                
             classifier = XGBClassifier(**params)
+            params.pop("verbosity")
             objective_to_be_tuned = objective.xgb_classifier_objective
 
         elif predictor == "ann":

@@ -325,39 +325,16 @@ class ClassificationObjectives:
 
     def lgbm_classifier_objective(self, trial):
         param = {
-            "n_estimators": trial.suggest_int("n_estimators", 1, 100),
+            "n_estimators": trial.suggest_int("n_estimators", 1, 1000),
             "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1e5),
-            "boosting_type": trial.suggest_categorical(
-                "boosting_type", ["gbdt", "goss", "dart", "rf"]
-            ),
-            "num_leaves": trial.suggest_int("num_leaves", 1, 10),
             "max_depth": trial.suggest_int("max_depth", 1, 10),
-            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 10),
             "min_child_samples": trial.suggest_int("min_child_samples", 1, 10),
-            "min_child_weight": trial.suggest_float("min_child_weight", 0, 0.5),
-            "max_bin": trial.suggest_int("max_bin", 1, 10),
+            "min_child_weight": trial.suggest_uniform("min_child_weight", 0, 0.5),
             "subsample": trial.suggest_uniform("subsample", 0.1, 1),
             "subsample_freq": trial.suggest_int("subsample_freq", 1, 10),
             "colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.1, 1),
-            "subsample_for_bin": trial.suggest_int("subsample_for_bin", 1, 10),
-            "reg_alpha": trial.suggest_loguniform("reg_alpha", 1e-5, 1e5),
-            "reg_lambda": trial.suggest_loguniform("reg_lambda", 1e-5, 1e5),
-            "metric": trial.suggest_categorical(
-                "metric",
-                [
-                    "binary_error",
-                    "binary_logloss",
-                    "auc",
-                    "binary_precision",
-                    "binary_recall",
-                    "multi_error",
-                    "multi_logloss",
-                    "multi_precision",
-                    "multi_recall",
-                ],
-            ),
-            "objective": self.lgbm_objective,
             "random_state": self.random_state,
+            "objective": self.lgbm_objective,
             "n_jobs": -1,
         }
         clf = LGBMClassifier(**param)
@@ -373,19 +350,23 @@ class ClassificationObjectives:
 
     def cat_classifier_objective(self, trial):
         param = {
-            "iterations": trial.suggest_int("iterations", 4000, 25000),
-            "od_wait": trial.suggest_int("od_wait", 500, 2300),
-            "learning_rate": trial.suggest_uniform("learning_rate", 0.01, 1),
-            "reg_lambda": trial.suggest_uniform("reg_lambda", 1e-5, 100),
-            "subsample": trial.suggest_uniform("subsample", 0, 1),
-            "random_strength": trial.suggest_uniform("random_strength", 10, 50),
-            "depth": trial.suggest_int("depth", 1, 15),
-            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 30),
-            "leaf_estimation_iterations": trial.suggest_int(
-                "leaf_estimation_iterations", 1, 15
+            "objective": trial.suggest_categorical("objective", ["Logloss", "CrossEntropy"]),
+            "iterations": trial.suggest_int("iterations", 100, 3000),
+            "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.01, 0.1),
+            "depth": trial.suggest_int("depth", 1, 12),
+            "boosting_type": trial.suggest_categorical("boosting_type", ["Ordered", "Plain"]),
+            "bootstrap_type": trial.suggest_categorical(
+                "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
             ),
-            "random_seed": self.random_state,
+            "used_ram_limit": "3gb",
+            "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1e5),
+            "random_state": self.random_state,
         }
+
+        if param["bootstrap_type"] == "Bayesian":
+            param["bagging_temperature"] = trial.suggest_float("bagging_temperature", 0, 10)
+        elif param["bootstrap_type"] == "Bernoulli":
+            param["subsample"] = trial.suggest_float("subsample", 0.1, 1)
         clf = CatBoostClassifier(**param)
         scores = cross_val_score(
             clf,
@@ -410,6 +391,7 @@ class ClassificationObjectives:
             "reg_lambda": trial.suggest_uniform("reg_lambda", 0, 1),
             "random_state": self.random_state,
             "n_jobs": -1,
+            
         }
         clf = XGBClassifier(**param)
         scores = cross_val_score(

@@ -40,7 +40,7 @@ class Regression:
         verbose=False,
         exclude_models=[],
         path=None,
-        optuna_sampler=TPESampler(),
+        optuna_sampler=TPESampler(multivariate=True),
         optuna_direction="maximize",
         optuna_n_trials=100,
         optuna_metric="r2",
