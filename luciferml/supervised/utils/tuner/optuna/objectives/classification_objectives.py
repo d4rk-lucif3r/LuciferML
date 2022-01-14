@@ -158,13 +158,11 @@ class ClassificationObjectives:
 
     def knn_classifier_objective(self, trial):
         param = {
-            "n_neighbors": trial.suggest_int("n_neighbors", 1, 100),
+            "n_neighbors": trial.suggest_int("n_neighbors", 1, 256),
             "weights": trial.suggest_categorical("weights", ["uniform", "distance"]),
-            "algorithm": trial.suggest_categorical(
-                "algorithm", ["auto", "ball_tree", "kd_tree", "brute"]
-            ),
             "p": trial.suggest_int("p", 1, 10),
             "n_jobs": -1,
+            "rows_limit": 100000,
         }
         clf = KNeighborsClassifier(**param)
         scores = cross_val_score(
@@ -207,17 +205,16 @@ class ClassificationObjectives:
         param = {
             "n_estimators": trial.suggest_int("n_estimators", 1, 100),
             "criterion": trial.suggest_categorical("criterion", ["gini", "entropy"]),
-            "max_depth": trial.suggest_int("max_depth", 1, 10),
-            "min_samples_split": trial.suggest_int("min_samples_split", 1, 10),
-            "min_samples_leaf": trial.suggest_int("min_samples_leaf", 1, 10),
             "min_weight_fraction_leaf": trial.suggest_float(
                 "min_weight_fraction_leaf", 0, 0.5
             ),
-            "max_features": trial.suggest_categorical(
-                "max_features", ["auto", "sqrt", "log2"]
-            ),
-            "random_state": self.random_state,
+            "max_depth": trial.suggest_int("max_depth", 2, 32),
+            "min_samples_split": trial.suggest_int("min_samples_split", 2, 100),
+            "min_samples_leaf": trial.suggest_int("min_samples_leaf", 1, 100),
+            "max_features": trial.suggest_float("max_features", 0.01, 1),
+            "seed":  self.random_state,
             "n_jobs": -1,
+            "max_steps": 10,
         }
         clf = RandomForestClassifier(**param)
         scores = cross_val_score(
@@ -298,19 +295,17 @@ class ClassificationObjectives:
 
     def extc_classifier_objective(self, trial):
         param = {
-            "n_estimators": trial.suggest_int("n_estimators", 1, 100),
             "criterion": trial.suggest_categorical("criterion", ["gini", "entropy"]),
-            "max_depth": trial.suggest_int("max_depth", 1, 10),
-            "min_samples_split": trial.suggest_int("min_samples_split", 1, 10),
-            "min_samples_leaf": trial.suggest_int("min_samples_leaf", 1, 10),
             "min_weight_fraction_leaf": trial.suggest_float(
                 "min_weight_fraction_leaf", 0, 0.5
             ),
-            "max_features": trial.suggest_categorical(
-                "max_features", ["auto", "sqrt", "log2"]
-            ),
+            "max_depth": trial.suggest_int("max_depth", 2, 32),
+            "min_samples_split": trial.suggest_int("min_samples_split", 2, 100),
+            "min_samples_leaf": trial.suggest_int("min_samples_leaf", 1, 100),
+            "max_features": trial.suggest_float("max_features", 0.01, 1),
             "random_state": self.random_state,
             "n_jobs": -1,
+            "max_steps": 10,
         }
         clf = ExtraTreesClassifier(**param)
         scores = cross_val_score(
@@ -325,17 +320,26 @@ class ClassificationObjectives:
 
     def lgbm_classifier_objective(self, trial):
         param = {
-            "n_estimators": trial.suggest_int("n_estimators", 1, 1000),
-            "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1e5),
-            "max_depth": trial.suggest_int("max_depth", 1, 10),
-            "min_child_samples": trial.suggest_int("min_child_samples", 1, 10),
-            "min_child_weight": trial.suggest_uniform("min_child_weight", 0, 0.5),
-            "subsample": trial.suggest_uniform("subsample", 0.1, 1),
-            "subsample_freq": trial.suggest_int("subsample_freq", 1, 10),
-            "colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.1, 1),
-            "random_state": self.random_state,
+            "learning_rate": trial.suggest_categorical(
+                "learning_rate", [0.0125, 0.025, 0.05, 0.1]
+            ),
+            "num_leaves": trial.suggest_int("num_leaves", 2, 2048),
+            "lambda_l1": trial.suggest_float("lambda_l1", 1e-8, 10.0, log=True),
+            "lambda_l2": trial.suggest_float("lambda_l2", 1e-8, 10.0, log=True),
+            "feature_fraction": min(
+                trial.suggest_float("feature_fraction", 0.3, 1.0 + 1e-8), 1.0
+            ),
+            "bagging_fraction": min(
+                trial.suggest_float("bagging_fraction", 0.3, 1.0 + 1e-8), 1.0
+            ),
+            "bagging_freq": trial.suggest_int("bagging_freq", 1, 7),
+            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 100),
+            "extra_trees": trial.suggest_categorical("extra_trees", [True, False]),
+            "feature_pre_filter": False,
+            "boosting_type": "gbdt",
+            "seed": self.random_state,
+            "num_threads": -1,
             "objective": self.lgbm_objective,
-            "n_jobs": -1,
         }
         clf = LGBMClassifier(**param)
         scores = cross_val_score(
@@ -351,16 +355,24 @@ class ClassificationObjectives:
     def cat_classifier_objective(self, trial):
         param = {
             "objective": trial.suggest_categorical("objective", ["Logloss", "CrossEntropy"]),
-            "iterations": trial.suggest_int("iterations", 100, 3000),
+            "iterations": 1000,
             "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.01, 0.1),
             "depth": trial.suggest_int("depth", 1, 12),
             "boosting_type": trial.suggest_categorical("boosting_type", ["Ordered", "Plain"]),
             "bootstrap_type": trial.suggest_categorical(
                 "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
             ),
-            "used_ram_limit": "3gb",
-            "learning_rate": trial.suggest_loguniform("learning_rate", 1e-5, 1e5),
+            "min_data_in_leaf": trial.suggest_int("min_data_in_leaf", 1, 100),
+            "learning_rate": trial.suggest_categorical(
+                    "learning_rate", [0.05, 0.1, 0.2]
+                ),
+            "rsm": trial.suggest_float("rsm", 0.1, 1),
+            "l2_leaf_reg": trial.suggest_float(
+                "l2_leaf_reg", 0.0001, 10.0, log=False
+            ),
             "random_state": self.random_state,
+            "verbose": False,
+            "allow_writing_files": False,
         }
 
         if param["bootstrap_type"] == "Bayesian":
@@ -380,17 +392,23 @@ class ClassificationObjectives:
 
     def xgb_classifier_objective(self, trial):
         param = {
-            "n_estimators": trial.suggest_int("n_estimators", 1, 100),
-            "max_depth": trial.suggest_int("max_depth", 1, 10),
-            "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
-            "learning_rate": trial.suggest_uniform("learning_rate", 0.01, 1),
-            "gamma": trial.suggest_uniform("gamma", 0, 1),
-            "colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.1, 1),
-            "subsample": trial.suggest_uniform("subsample", 0.1, 1),
-            "reg_alpha": trial.suggest_uniform("reg_alpha", 0, 1),
-            "reg_lambda": trial.suggest_uniform("reg_lambda", 0, 1),
-            "random_state": self.random_state,
+            "learning_rate": trial.suggest_categorical(
+                "learning_rate", [0.05, 0.1, 0.2]
+            ),
+            "eta": trial.suggest_categorical("eta", [0.0125, 0.025, 0.05, 0.1]),
+            "max_depth": trial.suggest_int("max_depth", 2, 12),
+            "lambda": trial.suggest_float("lambda", 1e-8, 10.0, log=True),
+            "alpha": trial.suggest_float("alpha", 1e-8, 10.0, log=True),
+            "colsample_bytree": min(
+                trial.suggest_float("colsample_bytree", 0.3, 1.0 + 1e-8), 1.0
+            ),
+            "subsample": min(trial.suggest_float("subsample", 0.3, 1.0 + 1e-8), 1.0),
+            "min_child_weight": trial.suggest_int("min_child_weight", 1, 100),
+            "tree_method": "hist",
+            "booster": "gbtree",
             "n_jobs": -1,
+            "seed": self.random_state,
+            "verbosity": 0,
             
         }
         clf = XGBClassifier(**param)
@@ -407,17 +425,17 @@ class ClassificationObjectives:
     def mlp_classifier_objective(self, trial):
         param = {
             "hidden_layer_sizes": trial.suggest_int("hidden_layer_sizes", 1, 10),
-            "activation": trial.suggest_categorical(
-                "activation", ["identity", "logistic", "tanh", "relu"]
-            ),
-            "solver": trial.suggest_categorical("solver", ["lbfgs", "sgd", "adam"]),
-            "alpha": trial.suggest_uniform("alpha", 0, 1),
-            "learning_rate": trial.suggest_categorical(
-                "learning_rate", ["constant", "invscaling", "adaptive"]
-            ),
-            "learning_rate_init": trial.suggest_uniform("learning_rate_init", 0, 1),
             "max_iter": trial.suggest_int("max_iter", 1, 2000),
-            "random_state": self.random_state,
+            "dense_1_size": trial.suggest_int("dense_1_size", 4, 100),
+            "dense_2_size": trial.suggest_int("dense_2_size", 2, 100),
+            "learning_rate": trial.suggest_categorical(
+                "learning_rate", [0.005, 0.01, 0.05, 0.1, 0.2]
+            ),
+            "learning_rate_type": trial.suggest_categorical(
+                "learning_rate_type", ["constant", "adaptive"]
+            ),
+            "alpha": trial.suggest_float("alpha", 1e-8, 10.0, log=True),
+            "seed": self.random_state,
         }
         clf = MLPClassifier(**param)
         scores = cross_val_score(

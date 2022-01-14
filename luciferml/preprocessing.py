@@ -1,64 +1,69 @@
 import time
+from collections import Counter
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
+from colorama import Fore
+from IPython.display import display
 from scipy.special import boxcox1p
 from scipy.stats import norm, probplot, skew
 
-from luciferml.supervised.utils.configs import *
+from luciferml.supervised.utils.configs import intro
 
 
 class Preprocess:
-    def __plotter(dataset, column_name, text, color):
+    
+    def __init__(self, dataset, columns, except_columns = []):
+        self.__dataset = dataset
+        self.__columns = columns
+        self.__except_columns = except_columns
+    
+    def __plotter(self, name, text, color):
         plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
         sns.distplot(
-            dataset[column_name],
+            self.__dataset[self.column_name],
             fit=norm,
             color=color,
-            label="Skewness: %.2f" % (dataset[column_name].skew()),
+            label="Skewness: %.2f" % (self.__dataset[name].skew()),
         )
         plt.title(
-            column_name.capitalize()
-            + " Distplot for {} {} Skewness Transformation".format(column_name, text),
+            name.capitalize()
+            + " Distplot for {} {} Skewness Transformation".format(name, text),
             color="black",
         )
         plt.legend()
         plt.subplot(1, 2, 2)
 
-        probplot(dataset[column_name], plot=plt)
+        probplot(self.__dataset[name], plot=plt)
         plt.show()
 
-    def __skewcheck(dataset, except_columns):
-        numeric_feats = dataset.dtypes[dataset.dtypes != "object"].index
-        if not len(except_columns) == 0:
-            if len(except_columns) > len(numeric_feats):
-                numeric_feats = set(except_columns) - set(numeric_feats)
+    def __skewcheck(self):
+        numeric_feats = self.__dataset.dtypes[self.__dataset.dtypes !=
+                                            "object"].index
+        if not len(self.__except_columns) == 0:
+            if len(self.__except_columns) > len(numeric_feats):
+                numeric_feats = set(self.__except_columns) - set(numeric_feats)
             else:
-                numeric_feats = set(numeric_feats) - set(except_columns)
+                numeric_feats = set(numeric_feats) - set(self.__except_columns)
         skewed_feats = (
-            dataset[numeric_feats]
+            self.__dataset[numeric_feats]
             .apply(lambda x: skew(x.dropna()))
             .sort_values(ascending=False)
         )
-        print("\nSkewness in numerical features: \n")
+        print(Fore.GREEN + "\nSkewness in numerical features: \n")
         skewness = pd.DataFrame(skewed_feats, columns=["Skewness"])
-        print(skewness.head(10))
+        display(skewness)
         skew_dict = dict(skewness["Skewness"])
         skewed_features = skewness.index
         return (skewed_features, skew_dict)
 
-    def skewcorrect(dataset, except_columns=[]) -> pd.DataFrame:
+    def skewcorrect(self) -> pd.DataFrame:
         """
             Plots distplot and probability plot for non-normalized data and after normalizing the provided data.
             Normalizes data using boxcox normalization
-
-        Parameters:
-            dataset : pd.DataFrame
-                Dataset on which skewness correction has to be done.
-            except_columns : list
-                Columns for which skewness correction need not to be done.Default = []
 
         :returns: Scaled Dataset
         :rtype: pd.DataFrame
@@ -89,49 +94,55 @@ class Preprocess:
         """
         try:
             start = time.time()
-            print(intro, "\n")
-            print("Started Preprocessor \n")
-            if not isinstance(dataset, pd.DataFrame):
+            print(Fore.MAGENTA + intro, "\n")
+            print(Fore.GREEN + "Started LuciferML [", "\u2713", "]\n")
+            if not isinstance(self.__dataset, pd.DataFrame):
                 print(
-                    "TypeError: This Function expects  Pandas Dataframe but {}".format(
-                        type(dataset)
+                    Fore.RED + "TypeError: This Function expects  Pandas Dataframe but {}".format(
+                        type(self.__dataset)
                     ),
                     " is given \n",
                 )
                 end = time.time()
-                print("Elapsed Time: ", end - start, "seconds\n")
+                print(Fore.GREEN + "Elapsed Time: ", end - start, "seconds\n")
                 return
 
-            (skewed_features, skew_dict) = Preprocess.__skewcheck(
-                dataset, except_columns
+            (skewed_features, skew_dict) = self.__skewcheck(
+                self.__dataset, self.__except_columns
             )
             for column_name in skewed_features:
                 lam = 0
-                (mu, sigma) = norm.fit(dataset[column_name])
+                (mu, sigma) = norm.fit(self.__dataset[column_name])
                 print(
-                    "Skewness Before Transformation for {}: ".format(column_name),
-                    dataset[column_name].skew(),
+                    Fore.CYAN +
+                    "Skewness Before Transformation for {}: ".format(
+                        column_name),
+                    self.__dataset[column_name].skew(),
                     "\n",
                 )
                 print(
-                    "Mean before Transformation for {} : {}, Standard Deviation before Transformation for {} : {}".format(
+                    Fore.CYAN + "Mean before Transformation for {} : {}, Standard Deviation before Transformation for {} : {}".format(
                         column_name.capitalize(), mu, column_name.capitalize(), sigma
                     ),
                     "\n",
                 )
-                Preprocess.__plotter(dataset, column_name, "Before", "lightcoral")
+                self.__plotter(
+                    self.__dataset, column_name, "Before", "lightcoral")
                 try:
                     if skew_dict[column_name] > 0.75:
                         lam = 0.15
-                    dataset[column_name] = boxcox1p(dataset[column_name], lam)
+                    self.__dataset[column_name] = boxcox1p(
+                        self.__dataset[column_name], lam)
                     print(
-                        "Skewness After Transformation for {}: ".format(column_name),
-                        dataset[column_name].skew(),
+                        Fore.GREEN +
+                        "Skewness After Transformation for {}: ".format(
+                            column_name),
+                        self.__dataset[column_name].skew(),
                         "\n",
                     )
-                    (mu, sigma) = norm.fit(dataset[column_name])
+                    (mu, sigma) = norm.fit(self.__dataset[column_name])
                     print(
-                        "Mean before Transformation for {} : {}, Standard Deviation before Transformation for {} : {}".format(
+                        Fore.GREEN + "Mean before Transformation for {} : {}, Standard Deviation before Transformation for {} : {}".format(
                             column_name.capitalize(),
                             mu,
                             column_name.capitalize(),
@@ -139,10 +150,11 @@ class Preprocess:
                         ),
                         "\n",
                     )
-                    Preprocess.__plotter(dataset, column_name, "After", "orange")
+                    self.__plotter(
+                        self.__dataset, column_name, "After", "orange")
                 except Exception as error:
                     print(
-                        "\nPlease check your dataset's column :",
+                        Fore.RED + "\nPlease check your dataset's column :",
                         column_name,
                         "Raised Error: ",
                         error,
@@ -150,8 +162,45 @@ class Preprocess:
                     )
                     pass
             end = time.time()
-            print("Elapsed Time: ", end - start, "seconds\n")
-            return dataset
+            print(Fore.GREEN + "Elapsed Time: ", end - start, "seconds\n")
+            return self.__dataset
 
         except Exception as error:
-            print("\033[41m", "Skewness Correction Failed with error : ", error, "\n")
+            print(Fore.RED + "Skewness Correction Failed with error : ", error, "\n")
+
+    def detect_outliers(self):
+        """
+        This function takes dataset and columns as input and finds Q1, Q3 and IQR for that list of column
+        Detects the outlier and it index and stores them in a list.
+        Then it creates as counter object with that list and stores it
+        in Multiple Outliers list if the value of outlier is greater than 1.5
+        
+        Ex:
+            1) For printing no. of outliers.
+                print("number of outliers detected --> ",
+                len(dataset.loc[detect_outliers(dataset, dataset.columns[:-1])]))
+            2) Printing rows and columns collecting the outliers
+                dataset.loc[detect_outliers(dataset.columns[:-1])]
+            3) Dropping those detected outliers
+                dataset = dataset.drop(detect_outliers(dataset.columns[:-1]),axis = 0).reset_index(drop = True)
+        """
+        outlier_indices = []
+        for column in self.__columns:
+            Q1 = np.percentile(self.__dataset[column], 25)
+            Q3 = np.percentile(self.__dataset[column], 75)
+            IQR = Q3 - Q1
+            outlier_step = IQR * 1.5
+            outlier_list_col = self.__dataset[(self.__dataset[column] < Q1 - outlier_step)
+                                            | (self.__dataset[column] > Q3 + outlier_step)].index
+            outlier_indices.extend(outlier_list_col)
+        outlier_indices = Counter(outlier_indices)
+        multiple_outliers = list(i for i, v in outlier_indices.items() if v > 1.5)
+        return multiple_outliers
+
+    def preprocess(self):
+        
+        display(self.__datasetdescribe().T.style.bar(
+            subset=['mean'],
+            color='#606ff2').background_gradient(
+            subset=['std'], cmap='PuBu').background_gradient(subset=['50%'], cmap='PuBu'))
+        
