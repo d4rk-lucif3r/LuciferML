@@ -14,17 +14,17 @@ from luciferml.supervised.utils.configs import intro
 
 
 class Preprocess:
-    
-    def __init__(self, dataset, columns, except_columns = []):
+
+    def __init__(self, dataset, columns, except_columns=[]):
         self.__dataset = dataset
         self.__columns = columns
         self.__except_columns = except_columns
-    
+
     def __plotter(self, name, text, color):
         plt.figure(figsize=(20, 10))
         plt.subplot(1, 2, 1)
         sns.distplot(
-            self.__dataset[self.column_name],
+            self.__dataset[name],
             fit=norm,
             color=color,
             label="Skewness: %.2f" % (self.__dataset[name].skew()),
@@ -42,7 +42,7 @@ class Preprocess:
 
     def __skewcheck(self):
         numeric_feats = self.__dataset.dtypes[self.__dataset.dtypes !=
-                                            "object"].index
+                                              "object"].index
         if not len(self.__except_columns) == 0:
             if len(self.__except_columns) > len(numeric_feats):
                 numeric_feats = set(self.__except_columns) - set(numeric_feats)
@@ -189,16 +189,16 @@ class Preprocess:
             IQR = Q3 - Q1
             outlier_step = IQR * 1.5
             outlier_list_col = self.__dataset[(self.__dataset[column] < Q1 - outlier_step)
-                                            | (self.__dataset[column] > Q3 + outlier_step)].index
+                                              | (self.__dataset[column] > Q3 + outlier_step)].index
             outlier_indices.extend(outlier_list_col)
         outlier_indices = Counter(outlier_indices)
-        multiple_outliers = list(i for i, v in outlier_indices.items() if v > 1.5)
+        multiple_outliers = list(
+            i for i, v in outlier_indices.items() if v > 1.5)
         return multiple_outliers
 
     def preprocess(self):
-        
+
         display(self.__datasetdescribe().T.style.bar(
             subset=['mean'],
             color='#606ff2').background_gradient(
             subset=['std'], cmap='PuBu').background_gradient(subset=['50%'], cmap='PuBu'))
-        
