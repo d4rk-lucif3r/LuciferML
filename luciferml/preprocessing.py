@@ -72,23 +72,23 @@ class Preprocess:
 
          1) All Columns
 
-                     from luciferml.preprocessing import Preprocess as prep
+                     from luciferml.preprocessing import Preprocess as pp
 
                      import pandas as pd
 
                      dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-
+                     prep = pp(dataset, dataset.columns)
                      dataset = prep.skewcorrect(dataset)
 
          2) Except column/columns
 
-                     from luciferml.preprocessing import Preprocess as prep
+                     from luciferml.preprocessing import Preprocess as pp
 
                      import pandas as pd
 
                      dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-
-                     dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
+                     prep = pp(dataset, dataset.columns, except_columns=['Purchased'])
+                     dataset = prep.skewcorrect()
 
 
         """
@@ -107,9 +107,7 @@ class Preprocess:
                 print(Fore.GREEN + "Elapsed Time: ", end - start, "seconds\n")
                 return
 
-            (skewed_features, skew_dict) = self.__skewcheck(
-                self.__dataset, self.__except_columns
-            )
+            (skewed_features, skew_dict) = self.__skewcheck()
             for column_name in skewed_features:
                 lam = 0
                 (mu, sigma) = norm.fit(self.__dataset[column_name])

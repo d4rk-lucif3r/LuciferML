@@ -33,19 +33,21 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
 
     Example:
 
-     1) All Columns:
+         1) All Columns
 
-             from luciferml.preprocessing import Preprocess as prep
-             import pandas as pd
-             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-             dataset = prep.skewcorrect(dataset)
+                     from luciferml.preprocessing import Preprocess as pp
+                     import pandas as pd
+                     dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+                     prep = pp(dataset, dataset.columns)
+                     dataset = prep.skewcorrect(dataset)
 
-     2) Except column/columns:
+         2) Except column/columns
 
-             from luciferml.preprocessing import Preprocess as prep
-             import pandas as pd
-             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-             dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
+                     from luciferml.preprocessing import Preprocess as pp
+                     import pandas as pd
+                     dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+                     prep = pp(dataset, dataset.columns, except_columns=['Purchased'])
+                     dataset = prep.skewcorrect()
 
     More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Preprocessing.md)
 

@@ -22,22 +22,22 @@
   
     Example:
 
-     1) All Columns
+        1) All Columns
 
-             from luciferml.preprocessing import Preprocess as prep
+                    from luciferml.preprocessing import Preprocess as pp
 
-             import pandas as pd
+                    import pandas as pd
 
-             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+                    dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+                    prep = pp(dataset, dataset.columns)
+                    dataset = prep.skewcorrect(dataset)
 
-             dataset = prep.skewcorrect(dataset)
+        2) Except column/columns
 
-     2) Except column/columns
+                    from luciferml.preprocessing import Preprocess as pp
 
-             from luciferml.preprocessing import Preprocess as prep
+                    import pandas as pd
 
-             import pandas as pd
-
-             dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-
-             dataset = prep.skewcorrect(dataset,except_columns=['Purchased'])
+                    dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
+                    prep = pp(dataset, dataset.columns, except_columns=['Purchased'])
+                    dataset = prep.skewcorrect()
