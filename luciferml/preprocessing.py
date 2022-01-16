@@ -125,7 +125,7 @@ class Preprocess:
                     "\n",
                 )
                 self.__plotter(
-                    self.__dataset, column_name, "Before", "lightcoral")
+                    column_name, "Before", "lightcoral")
                 try:
                     if skew_dict[column_name] > 0.75:
                         lam = 0.15
@@ -149,7 +149,7 @@ class Preprocess:
                         "\n",
                     )
                     self.__plotter(
-                        self.__dataset, column_name, "After", "orange")
+                        column_name, "After", "orange")
                 except Exception as error:
                     print(
                         Fore.RED + "\nPlease check your dataset's column :",
