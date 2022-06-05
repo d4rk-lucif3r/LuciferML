@@ -1,57 +1,32 @@
-<p align="center" ><img align='center' alt="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif"  src="https://github.com/d4rk-lucif3r/LuciferML/blob/master/assets/img/LUCIFER-ML.gif"></p>
+# ANAI an Automated Machine Learning Library
+# ANAI an Automated Machine Learning Library by [Revca](www.revca.io)
 
-# LuciferML a Semi-Automated Machine Learning Library by d4rk-lucif3r
+![](https://revca-assets.s3.ap-south-1.amazonaws.com/Full+version+on+black.jpeg)
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Downloads](https://static.pepy.tech/personalized-badge/lucifer-ml?period=total&units=international_system&left_color=black&right_color=green&left_text=Total%20Downloads)](https://pepy.tech/project/lucifer-ml)
 [![Downloads](https://static.pepy.tech/personalized-badge/lucifer-ml?period=month&units=international_system&left_color=black&right_color=green&left_text=Downloads%20per%20Month)](https://pepy.tech/project/lucifer-ml)
 ![ReadTheDocs](https://img.shields.io/readthedocs/luciferml?style=plastic)
 
 ## About
 
-The LuciferML is a Semi-Automated Machine Learning Python Library that works with tabular data. It is designed to save time while doing data analysis. It will help you right from data preprocessing to Data Prediction.
+ANAI is an Automated Machine Learning Python Library that works with tabular data. It is intended to save time when performing data analysis. It will assist you with everything right from the beginning i.e Ingesting data using the inbuilt connectors, preprocessing, feature engineering, model building, model evaluation, model tuning and much more.
 
-### The LuciferML will help you with
+## Our Goal
 
-1. Preprocessing Data:
-    - Encoding
-    - Splitting
-    - Scaling
-    - Dimensionality Reduction
-    - Resampling
-2. Trying many different machine learning models with hyperparameter tuning,
+Our Goal is to democratize Machine Learning and make it accessible to everyone.
 
-## Installation
+## Let's get started
 
-    pip install lucifer-ml
+### Installation
 
-## Available Preprocessing Techniques
+    1) Python venv:
+        pip install anai
+    
+    2) Anaconda:
+        conda install anai
 
-1) Skewness Correction
-
-    Takes Pandas Dataframe as input. Transforms each column in dataset except the columns given as an optional parameter.
-    Returns Transformed Data.
-
-    Example:
-
-         1) All Columns
-
-                     from luciferml.preprocessing import Preprocess as pp
-                     import pandas as pd
-                     dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-                     prep = pp(dataset, dataset.columns)
-                     dataset = prep.skewcorrect(dataset)
-
-         2) Except column/columns
-
-                     from luciferml.preprocessing import Preprocess as pp
-                     import pandas as pd
-                     dataset = pd.read_csv('/examples/Social_Network_Ads.csv')
-                     prep = pp(dataset, dataset.columns, except_columns=['Purchased'])
-                     dataset = prep.skewcorrect()
-
-    More about Preprocessing [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Preprocessing.md)
-
-## Available Modelling Techniques
+### Available Modelling Techniques
 
 1) Classification
 
@@ -75,19 +50,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'cat' : 'CatBoost Classifier',
         - 'xgb' : 'XGBoost Classifier',
         - 'ann' : 'Multilayer Perceptron Classifier',
-        - 'all' : 'Applies all above classifiers'
-
-    Example:
-
-        from luciferml.supervised.classification import Classification
-        dataset = pd.read_csv('Social_Network_Ads.csv')
-        X = dataset.iloc[:, :-1]
-        y = dataset.iloc[:, -1]
-        classifier = Classification(predictor = ['lr'])
-        classifier.fit(X, y)
-        result = classifier.result()
-
-    More About [Classification](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Classification.md)
+        - 'all' : 'Use all the above models',
 
 2) Regression
 
@@ -99,7 +62,7 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'krr' : 'Kernel Ridge Regressor',
         - 'br'  : 'Bayesian Ridge Regressor',
         - 'svr' : 'Support Vector Regressor',
-        - 'knr' : 'K-Nearest Regressor',
+        - 'knn' : 'K-Nearest Regressor',
         - 'dt'  : 'Decision Trees',
         - 'rfr' : 'Random Forest Regressor',
         - 'gbr' : 'Gradient Boost Regressor',
@@ -110,47 +73,164 @@ The LuciferML is a Semi-Automated Machine Learning Python Library that works wit
         - 'xgb' : 'XGBoost Regressor',
         - 'cat' : 'Catboost Regressor',
         - 'ann' : 'Multilayer Perceptron Regressor',
-        - 'all' : 'Applies all above regressors'
+        - 'all' : 'Uses all the above models'
 
-    Example:
+### Usage Example
 
-        from luciferml.supervised.regression import Regression
-        dataset = pd.read_excel('examples\Folds5x2_pp.xlsx')
-        X = dataset.iloc[:, :-1]
-        y = dataset.iloc[:, -1]
-        regressor = Regression(predictor = ['lin'])
-        regressor.fit(X, y)
-        result = regressor.result()
+    import anai
+    ai = anai.run(
+                filepath='examples/Folds5x2_pp.xlsx', 
+                target='PE',
+                predictor=['lin'],
+    )
 
-    More about Regression [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/luciferml/supervised/README/Regression.md)
+### Hyperparameter Tuning
 
-## Hyperparameter Tuning
+ANAI is powered by [Optuna](https://github.com/optuna/optuna) for Hyperparam tuning. Just pass "tune = True" in run arguments and it will start tuning the model/s with Optuna.
 
-LuciferML is powered by [Optuna](https://github.com/optuna/optuna) for Hyperparam tuning. Just add "tune = True" in either Regressor or Classifier it will start tuning the model/s with Optuna.
+### Persistence
 
-## Persistence
-
-LuciferML's model can be saved as a pickle file. It will save both the model and the scaler to the pickle file.
-
+ANAI's model can be saved as a pickle file. It will save both the model and the scaler to the pickle file.
 
     - Saving
 
         Ex: 
-            regressor.save([<path-to-model.pkl>, <path-to-scaler.pkl>])
+            ai.save([<path-to-model.pkl>, <path-to-scaler.pkl>])
 
-A new LuciferML Object can be loaded as well by specifying path of model and scaler
+A new ANAI Object can be loaded as well by specifying path of model and scaler
 
     - Loading
 
         Ex: 
-            regressor = Regression(path = [<path-to-model.pkl>, <path-to-scaler.pkl>])
+            ai = anai.run(path = [<path-to-model.pkl>, <path-to-scaler.pkl>])
 
-These are applicable for both Classification and Regression.
+### More Examples [here](<placeholder>)
 
-## Examples
+## Contributing
 
-Please refer to more examples [here](https://github.com/d4rk-lucif3r/LuciferML/blob/master/examples/example.ipynb)
+    - If you have any suggestions or bug reports, please open an issue [here]()
+    - If you want to join the [ANAI team]()
 
----
+## License
 
-## [To-Do's](https://github.com/d4rk-lucif3r/LuciferML/issues/10)
+    APACHE 2.0 License
+
+## Contact
+
+- [EMAIL](mailto:info@anai.io)
+- [LinkedIn](https://www.linkedin.com/company/revca/)
+- [Website](https://www.anai.io/)
+
+![](https://revca-assets.s3.ap-south-1.amazonaws.com/Full+version+on+black.jpeg)
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Downloads](https://static.pepy.tech/personalized-badge/lucifer-ml?period=total&units=international_system&left_color=black&right_color=green&left_text=Total%20Downloads)](https://pepy.tech/project/lucifer-ml)
+[![Downloads](https://static.pepy.tech/personalized-badge/lucifer-ml?period=month&units=international_system&left_color=black&right_color=green&left_text=Downloads%20per%20Month)](https://pepy.tech/project/lucifer-ml)
+![ReadTheDocs](https://img.shields.io/readthedocs/luciferml?style=plastic)
+
+## About
+
+ANAI is an Automated Machine Learning Python Library that works with tabular data. It is intended to save time when performing data analysis. It will assist you with everything right from the beginning i.e Ingesting data using the inbuilt connectors, preprocessing, feature engineering, model building, model evaluation, model tuning and much more.
+
+## Our Goal
+
+Our Goal is to democratize Machine Learning and make it accessible to everyone.
+
+## Let's get started
+
+### Installation
+
+    1) Python venv:
+        pip install anai
+    
+    2) Anaconda:
+        conda install anai
+
+### Available Modelling Techniques
+
+1) Classification
+
+    Available Models for Classification
+
+        - 'lr'  : 'Logistic Regression',
+        - 'sgd' : 'Stochastic Gradient Descent',
+        - 'perc': 'Perceptron',
+        - 'pass': 'Passive Aggressive Classifier',
+        - 'ridg': 'Ridge Classifier', 
+        - 'svm' : 'Support Vector Machine',
+        - 'knn' : 'K-Nearest Neighbours',
+        - 'dt'  : 'Decision Trees',
+        - 'nb'  : 'Naive Bayes',
+        - 'rfc' : 'Random Forest Classifier',
+        - 'gbc' : 'Gradient Boosting Classifier',
+        - 'ada' : 'AdaBoost Classifier',
+        - 'bag' : 'Bagging Classifier',
+        - 'extc': 'Extra Trees Classifier',
+        - 'lgbm': 'LightGBM Classifier',
+        - 'cat' : 'CatBoost Classifier',
+        - 'xgb' : 'XGBoost Classifier',
+        - 'ann' : 'Multilayer Perceptron Classifier',
+        - 'all' : 'Use all the above models',
+
+2) Regression
+
+       Available Models for Regression
+
+        - 'lin' : 'Linear Regression',
+        - 'sgd' : 'Stochastic Gradient Descent Regressor',
+        - 'elas': 'Elastic Net Regressot',
+        - 'krr' : 'Kernel Ridge Regressor',
+        - 'br'  : 'Bayesian Ridge Regressor',
+        - 'svr' : 'Support Vector Regressor',
+        - 'knn' : 'K-Nearest Regressor',
+        - 'dt'  : 'Decision Trees',
+        - 'rfr' : 'Random Forest Regressor',
+        - 'gbr' : 'Gradient Boost Regressor',
+        - 'ada' : 'AdaBoost Regressor',
+        - 'bag' : 'Bagging Regressor',
+        - 'extr': 'Extra Trees Regressor',
+        - 'lgbm': 'LightGBM Regressor',
+        - 'xgb' : 'XGBoost Regressor',
+        - 'cat' : 'Catboost Regressor',
+        - 'ann' : 'Multilayer Perceptron Regressor',
+        - 'all' : 'Uses all the above models'
+
+### Usage Example
+
+    import anai
+    ai = anai.run(
+                filepath='examples/Folds5x2_pp.xlsx', 
+                target='PE',
+                predictor=['lin'],
+    )
+
+### Hyperparameter Tuning
+
+ANAI is powered by [Optuna](https://github.com/optuna/optuna) for Hyperparam tuning. Just pass "tune = True" in run arguments and it will start tuning the model/s with Optuna.
+
+### Persistence
+
+ANAI's model can be saved as a pickle file. It will save both the model and the scaler to the pickle file.
+
+    - Saving
+
+        Ex: 
+            ai.save([<path-to-model.pkl>, <path-to-scaler.pkl>])
+
+A new ANAI Object can be loaded as well by specifying path of model and scaler
+
+    - Loading
+
+        Ex: 
+            ai = anai.run(path = [<path-to-model.pkl>, <path-to-scaler.pkl>])
+
+### More Examples [here](<placeholder>)
+
+## Contributing
+
+    - If you have any suggestions or bug reports, please open an issue [here]()
+    - If you want to join the [ANAI team]()
+
+## License
+
+    - APACHE 2.0 License
